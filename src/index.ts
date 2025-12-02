@@ -141,6 +141,12 @@ async function endGiveaway() {
     return;
   }
 
+  const giveaway = await db.getLatestGiveaway();
+  if (giveaway) {
+    await db.deactivateGiveaway(giveaway.id);
+    console.log('🔒 All giveaway buttons have been disabled');
+  }
+
   const channel = await client.channels.fetch(config.channelId);
   if (channel && channel.type !== ChannelType.GroupDM && channel.isTextBased()) {
     const embed = createWinnerEmbed(winner.userId, config.giveawayName);

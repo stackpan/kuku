@@ -45,6 +45,15 @@ export async function handleJoinGiveaway(interaction: ButtonInteraction) {
     return;
   }
 
+  if (!giveaway.isActive) {
+    await interaction.reply({
+      content: '❌ This giveaway has ended!',
+      flags: 'Ephemeral',
+    });
+    await db.rollbackTransaction();
+    return;
+  }
+
   await db.addParticipant(giveaway.id, interaction.user.id, roleId);
   
   const participantRoles = await db.getParticipantCountByRole(giveaway.id);
@@ -69,6 +78,18 @@ export async function handleCheckProbability(interaction: ButtonInteraction) {
       content: '❌ You are not registered in the giveaway! Click "Join Giveaway" first.',
       flags: 'Ephemeral',
     });
+    await db.rollbackTransaction();
+    return;
+  }
+
+  const giveaway = await db.getGiveawayByMessageId(interaction.message.id);
+
+  if (!giveaway || !giveaway.isActive) {
+    await interaction.reply({
+      content: '❌ This giveaway has ended!',
+      flags: 'Ephemeral',
+    });
+    await db.rollbackTransaction();
     return;
   }
 
