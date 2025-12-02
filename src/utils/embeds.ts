@@ -13,13 +13,12 @@ export function createGiveawayEmbed(): EmbedBuilder {
     .setTimestamp();
 }
 
-export function createProbabilityEmbed(probability: number, participantCount: number): EmbedBuilder {
+export function createProbabilityEmbed(probability: number): EmbedBuilder {
   return new EmbedBuilder()
     .setColor('#00FFFF')
     .setTitle('📊 Peluang Menang Anda')
     .setDescription(
-      `**Probabilitas: ${probability.toFixed(4)}%**\n\n` +
-      `Total peserta saat ini: ${participantCount}`
+      `**Probabilitas: ${probability.toFixed(4)}%**`
     )
     .setTimestamp();
 }

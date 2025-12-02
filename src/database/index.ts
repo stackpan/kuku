@@ -40,6 +40,7 @@ export class Database {
       giveawayId: result.rows[0].giveaway_id,
       userId: result.rows[0].user_id,
       roleId: result.rows[0].role_id,
+      probabilityCached: result.rows[0].probability_cache,
       createdAt: new Date(result.rows[0].created_at),
     };
   }
@@ -51,12 +52,22 @@ export class Database {
       giveawayId: row.giveaway_id,
       userId: row.user_id,
       roleId: row.role_id,
+      probabilityCached: row.probability_cache,
       createdAt: new Date(row.created_at),
     }));
   }
 
   async clearParticipants(): Promise<void> {
     await this.pool.query('DELETE FROM participants');
+  }
+
+  async updateParticipantProbabilityCache(giveawayId: string, roleId: string, probabilityCached: number): Promise<void> {
+    const query = `
+      UPDATE participants
+      SET probability_cache = $3
+      WHERE giveaway_id = $1 AND role_id = $2
+    `;
+    await this.pool.query(query, [giveawayId, roleId, probabilityCached]);
   }
 
   async saveGiveaway(messageId: string): Promise<void> {

@@ -7,9 +7,10 @@ export interface Config {
 }
 
 export interface Participant {
-  giveawayId: number;
+  giveawayId: string;
   userId: string;
   roleId: string;
+  probabilityCached: number | null;
   createdAt: Date;
 }
 
