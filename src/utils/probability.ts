@@ -4,7 +4,7 @@ export function calculateProbability(roleId: string, config: Config, allParticip
   const weight = config.roleWeights[roleId] || 1;
   const totalWeight = allParticipants.reduce((sum, p) => {
     return sum + (config.roleWeights[p.roleId] || 1);
-  }, weight);
+  }, 0);
   
   return (weight / totalWeight) * 100;
 }
