@@ -90,6 +90,16 @@ export class Database {
     return counts;
   }
 
+  async updateParticipantRole(userId: string, newRoleId: string): Promise<void> {
+    const query = 'UPDATE participants SET role_id = $1 WHERE user_id = $2';
+    await this.pool.query(query, [newRoleId, userId]);
+  }
+
+  async removeParticipant(userId: string): Promise<void> {
+    const query = 'DELETE FROM participants WHERE user_id = $1';
+    await this.pool.query(query, [userId]);
+  }
+
   async saveGiveaway(messageId: string): Promise<void> {
     const query = 'INSERT INTO giveaways (id, message_id) VALUES ($1, $2)';
     const uuid = randomUUID();

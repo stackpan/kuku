@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, Collection, REST, Routes, ChannelType } from 'discord.js';
+import { Client, GatewayIntentBits, Collection, REST, Routes, ChannelType, Events } from 'discord.js';
 import { env } from './config/index';
 import * as giveawayCommand from './commands/giveaway';
 import { handleJoinGiveaway, handleCheckProbability } from './handlers/button-handler';
@@ -9,6 +9,7 @@ import { db, config } from './singletons';
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMembers,
   ],
 });
 
@@ -68,6 +69,48 @@ client.on('interactionCreate', async interaction => {
         ephemeral: true,
       });
     }
+  }
+});
+
+client.on('guildMemberUpdate', async (oldMember, newMember) => {
+  try {
+    const oldRoles = oldMember.roles.cache.map(r => r.id);
+    const newRoles = newMember.roles.cache.map(r => r.id);
+    
+    const rolesChanged = oldRoles.length !== newRoles.length || 
+                         oldRoles.some(role => !newRoles.includes(role));
+    
+    if (!rolesChanged) return;
+
+    const participant = await db.getParticipant(newMember.user.id);
+    if (!participant) return;
+
+    const allowedRoles = config.allowedRoles;
+    let newPrimaryRole: string | null = null;
+    let highestWeight = -1;
+    
+    for (const roleId of allowedRoles) {
+      if (newMember.roles.cache.has(roleId)) {
+        const roleWeight = config.roleWeights[roleId] || 0;
+        if (roleWeight > highestWeight) {
+          highestWeight = roleWeight;
+          newPrimaryRole = roleId;
+        }
+      }
+    }
+
+    if (!newPrimaryRole) {
+      await db.removeParticipant(newMember.user.id);
+      console.log(`📝 Participant ${newMember.user.tag} removed - no allowed roles`);
+      return;
+    }
+
+    if (participant.roleId !== newPrimaryRole) {
+      await db.updateParticipantRole(newMember.user.id, newPrimaryRole);
+      console.log(`📝 Updated role for ${newMember.user.tag}: ${participant.roleId} -> ${newPrimaryRole}`);
+    }
+  } catch (error) {
+    console.error('Error handling guildMemberUpdate:', error);
   }
 });
 
