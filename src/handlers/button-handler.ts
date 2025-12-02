@@ -1,6 +1,6 @@
 import { ButtonInteraction, GuildMember } from 'discord.js';
 import { calculateProbability } from '../utils/probability';
-import { createProbabilityEmbed } from '../utils/embeds';
+import { createProbabilityEmbed } from '../components/embeds';
 import { config, db } from '../singletons';
 
 export async function handleJoinGiveaway(interaction: ButtonInteraction) {
@@ -13,7 +13,7 @@ export async function handleJoinGiveaway(interaction: ButtonInteraction) {
 
   if (!hasAllowedRole) {
     await interaction.reply({
-      content: '❌ Anda tidak memiliki role yang diperlukan untuk ikut giveaway ini!',
+      content: '❌ You do not have the required roles to join this giveaway.',
       ephemeral: true,
     });
     return;
@@ -22,7 +22,7 @@ export async function handleJoinGiveaway(interaction: ButtonInteraction) {
   const existingParticipant = await db.getParticipant(interaction.user.id);
   if (existingParticipant) {
     await interaction.reply({
-      content: '✅ Anda sudah terdaftar dalam giveaway!',
+      content: '✅ You are already registered in the giveaway!',
       ephemeral: true,
     });
     return;
@@ -39,7 +39,7 @@ export async function handleJoinGiveaway(interaction: ButtonInteraction) {
 
   if (!giveaway) {
     await interaction.reply({
-      content: '❌ Giveaway tidak ditemukan!',
+      content: '❌ Giveaway not found!',
       ephemeral: true,
     });
     return;
@@ -51,7 +51,7 @@ export async function handleJoinGiveaway(interaction: ButtonInteraction) {
   const probability = calculateProbability(roleId, participantRoles);
 
   await interaction.reply({
-    content: `✅ Anda berhasil bergabung dalam giveaway!\n📊 Peluang Anda: ${(probability * 100).toFixed(3)}%`,
+    content: `✅ You have successfully joined the giveaway!\n📊 Your probability is: ${(probability * 100).toFixed(3)}%`,
     ephemeral: true,
   });
 
@@ -64,7 +64,7 @@ export async function handleCheckProbability(interaction: ButtonInteraction) {
 
   if (!participant) {
     await interaction.reply({
-      content: '❌ Anda belum terdaftar dalam giveaway! Klik "Join Giveaway" terlebih dahulu.',
+      content: '❌ You are not registered in the giveaway! Click "Join Giveaway" first.',
       ephemeral: true,
     });
     return;
@@ -73,7 +73,7 @@ export async function handleCheckProbability(interaction: ButtonInteraction) {
   const participantRoles = await db.getParticipantCountByRole(participant.giveawayId);
   const probability = calculateProbability(participant.roleId, participantRoles);
 
-  const embed = createProbabilityEmbed(probability);
+  const embed = createProbabilityEmbed(probability, participant.roleId, Object.values(participantRoles).reduce((a, b) => a + b, 0));
 
   await interaction.reply({
     embeds: [embed],

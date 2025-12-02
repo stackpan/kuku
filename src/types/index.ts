@@ -1,6 +1,7 @@
 export interface Config {
   channelId: string;
   giveawayName: string;
+  giveawayDescription: string;
   endDate: string;
   allowedRoles: string[];
   roleWeights: Record<string, number>;

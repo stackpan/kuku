@@ -3,7 +3,7 @@ import { env } from './config/index';
 import * as giveawayCommand from './commands/giveaway';
 import { handleJoinGiveaway, handleCheckProbability } from './handlers/button-handler';
 import { selectWinner } from './utils/probability';
-import { createWinnerEmbed } from './utils/embeds';
+import { createWinnerEmbed } from './components/embeds';
 import { db, config } from './singletons';
 
 const client = new Client({
@@ -45,21 +45,26 @@ client.on('interactionCreate', async interaction => {
     } catch (error) {
       console.error('Error executing command:', error);
       await interaction.reply({
-        content: '❌ Terjadi error saat menjalankan command!',
+        content: '❌ An error occurred while executing the command!',
         ephemeral: true,
       });
     }
   } else if (interaction.isButton()) {
     try {
-      if (interaction.customId === 'join_giveaway') {
-        await handleJoinGiveaway(interaction);
-      } else if (interaction.customId === 'check_probability') {
-        await handleCheckProbability(interaction);
+      switch (interaction.customId) {
+        case 'join_giveaway':
+          await handleJoinGiveaway(interaction);
+          break;
+        case 'check_probability':
+          await handleCheckProbability(interaction);
+          break;
+        default:
+          return;
       }
     } catch (error) {
       console.error('Error handling button:', error);
       await interaction.reply({
-        content: '❌ Terjadi error!',
+        content: '❌ An error occurred while handling the button!',
         ephemeral: true,
       });
     }
@@ -72,10 +77,10 @@ function scheduleGiveawayEnd() {
   const timeUntilEnd = endDate.getTime() - now.getTime();
 
   if (timeUntilEnd > 0) {
-    console.log(`⏰ Giveaway akan berakhir dalam ${Math.floor(timeUntilEnd / 1000 / 60)} menit`);
+    console.log(`⏰ Giveaway will end in ${Math.floor(timeUntilEnd / 1000 / 60)} minutes`);
     setTimeout(endGiveaway, timeUntilEnd);
   } else {
-    console.log('⚠️ Tanggal giveaway sudah lewat');
+    console.log('⚠️ Giveaway end date has passed');
   }
 }
 
@@ -83,13 +88,13 @@ async function endGiveaway() {
   const participants = await db.getAllParticipants();
 
   if (participants.length === 0) {
-    console.log('❌ Tidak ada peserta dalam giveaway');
+    console.log('❌ No participants in the giveaway');
     return;
   }
 
   const winner = selectWinner(participants);
   if (!winner) {
-    console.log('❌ Gagal memilih pemenang');
+    console.log('❌ Failed to select a winner');
     return;
   }
 
@@ -97,7 +102,7 @@ async function endGiveaway() {
   if (channel && channel.type !== ChannelType.GroupDM && channel.isTextBased()) {
     const embed = createWinnerEmbed(winner.userId, config.giveawayName);
     await channel.send({ embeds: [embed] });
-    console.log(`🎉 Pemenang: ${winner.userId}`);
+    console.log(`🎉 Winner: ${winner.userId}`);
   }
 }
 

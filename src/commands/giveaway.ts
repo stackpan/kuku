@@ -6,7 +6,7 @@ import {
   ButtonBuilder,
   ButtonStyle,
 } from 'discord.js';
-import { createGiveawayEmbed } from '../utils/embeds';
+import { createGiveawayEmbed } from '../components/embeds';
 import { config, db } from '../singletons';
 
 export const data = new SlashCommandBuilder()
@@ -17,7 +17,7 @@ export const data = new SlashCommandBuilder()
 export async function execute(interaction: ChatInputCommandInteraction) {
   if (interaction.channelId !== config.channelId) {
     await interaction.reply({
-      content: `❌ Giveaway hanya bisa dimulai di channel <#${config.channelId}>`,
+      content: `❌ The giveaway can only be started in the channel <#${config.channelId}>`,
       ephemeral: true,
     });
     return;
@@ -32,12 +32,12 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       new ButtonBuilder()
         .setCustomId('join_giveaway')
         .setLabel('Join Giveaway')
-        .setStyle(ButtonStyle.Success)
+        .setStyle(ButtonStyle.Primary)
         .setEmoji('🎉'),
       new ButtonBuilder()
         .setCustomId('check_probability')
         .setLabel('Probability')
-        .setStyle(ButtonStyle.Primary)
+        .setStyle(ButtonStyle.Secondary)
         .setEmoji('📊')
     );
 
