@@ -4,6 +4,7 @@ import { createProbabilityEmbed } from '../utils/embeds';
 import { config, db } from '../singletons';
 
 export async function handleJoinGiveaway(interaction: ButtonInteraction) {
+  await db.beginTransaction();
   const member = interaction.member as GuildMember;
 
   const hasAllowedRole = member.roles.cache.some(role => 
@@ -44,6 +45,7 @@ export async function handleJoinGiveaway(interaction: ButtonInteraction) {
     return;
   }
 
+  await db.clearParticipantProbabilityCache(giveaway.id);
   await db.addParticipant(giveaway.id, interaction.user.id, roleId);
 
   const allParticipants = await db.getAllParticipants();
@@ -55,9 +57,12 @@ export async function handleJoinGiveaway(interaction: ButtonInteraction) {
     content: `✅ Anda berhasil bergabung dalam giveaway!\n📊 Peluang Anda: ${probability.toFixed(4)}%`,
     ephemeral: true,
   });
+
+  await db.commitTransaction();
 }
 
 export async function handleCheckProbability(interaction: ButtonInteraction) {
+  await db.beginTransaction();
   const participant = await db.getParticipant(interaction.user.id);
 
   if (!participant) {
@@ -82,4 +87,6 @@ export async function handleCheckProbability(interaction: ButtonInteraction) {
     embeds: [embed],
     ephemeral: true,
   });
+
+  await db.commitTransaction();
 }

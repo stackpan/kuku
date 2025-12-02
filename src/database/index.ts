@@ -24,6 +24,18 @@ export class Database {
     await this.pool.query(schema);
   }
 
+  async beginTransaction(): Promise<void> {
+    await this.pool.query('BEGIN');
+  }
+
+  async commitTransaction(): Promise<void> {
+    await this.pool.query('COMMIT');
+  }
+
+  async rollbackTransaction(): Promise<void> {
+    await this.pool.query('ROLLBACK');
+  }
+
   async addParticipant(giveawayId: string, userId: string, roleId: string): Promise<void> {
     const query = `
       INSERT INTO participants (giveaway_id, user_id, role_id)
@@ -59,6 +71,15 @@ export class Database {
 
   async clearParticipants(): Promise<void> {
     await this.pool.query('DELETE FROM participants');
+  }
+
+  async clearParticipantProbabilityCache(giveawayId: string): Promise<void> {
+    const query = `
+      UPDATE participants
+      SET probability_cache = NULL
+      WHERE giveaway_id = $1
+    `;
+    await this.pool.query(query, [giveawayId]);
   }
 
   async updateParticipantProbabilityCache(giveawayId: string, roleId: string, probabilityCached: number): Promise<void> {
