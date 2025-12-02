@@ -18,7 +18,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   if (interaction.channelId !== config.channelId) {
     await interaction.reply({
       content: `❌ The giveaway can only be started in the channel <#${config.channelId}>`,
-      ephemeral: true,
+      flags: 'Ephemeral',
     });
     return;
   }

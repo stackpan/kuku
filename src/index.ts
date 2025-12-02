@@ -47,7 +47,7 @@ client.on('interactionCreate', async interaction => {
       console.error('Error executing command:', error);
       await interaction.reply({
         content: '❌ An error occurred while executing the command!',
-        ephemeral: true,
+        flags: 'Ephemeral',
       });
     }
   } else if (interaction.isButton()) {
@@ -66,7 +66,7 @@ client.on('interactionCreate', async interaction => {
       console.error('Error handling button:', error);
       await interaction.reply({
         content: '❌ An error occurred while handling the button!',
-        ephemeral: true,
+        flags: 'Ephemeral',
       });
     }
   }

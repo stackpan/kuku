@@ -14,7 +14,7 @@ export async function handleJoinGiveaway(interaction: ButtonInteraction) {
   if (!hasAllowedRole) {
     await interaction.reply({
       content: '❌ You do not have the required roles to join this giveaway.',
-      ephemeral: true,
+      flags: 'Ephemeral',
     });
     return;
   }
@@ -23,7 +23,7 @@ export async function handleJoinGiveaway(interaction: ButtonInteraction) {
   if (existingParticipant) {
     await interaction.reply({
       content: '✅ You are already registered in the giveaway!',
-      ephemeral: true,
+      flags: 'Ephemeral',
     });
     return;
   }
@@ -40,7 +40,7 @@ export async function handleJoinGiveaway(interaction: ButtonInteraction) {
   if (!giveaway) {
     await interaction.reply({
       content: '❌ Giveaway not found!',
-      ephemeral: true,
+      flags: 'Ephemeral',
     });
     return;
   }
@@ -54,7 +54,7 @@ export async function handleJoinGiveaway(interaction: ButtonInteraction) {
 
   await interaction.reply({
     embeds: [embed],
-    ephemeral: true,
+    flags: 'Ephemeral',
   });
 
   await db.commitTransaction();
@@ -67,7 +67,7 @@ export async function handleCheckProbability(interaction: ButtonInteraction) {
   if (!participant) {
     await interaction.reply({
       content: '❌ You are not registered in the giveaway! Click "Join Giveaway" first.',
-      ephemeral: true,
+      flags: 'Ephemeral',
     });
     return;
   }
@@ -79,7 +79,7 @@ export async function handleCheckProbability(interaction: ButtonInteraction) {
 
   await interaction.reply({
     embeds: [embed],
-    ephemeral: true,
+    flags: 'Ephemeral',
   });
 
   await db.commitTransaction();
