@@ -41,8 +41,7 @@ export function createProbabilityEmbed(probability: number, roleId: string, tota
       Weight (chance): ${config.roleWeights[roleId]}×
       Total Participants: ${totalParticipants}
       `
-    )
-    .setTimestamp();
+    );
 }
 
 export function createWinnerEmbed(winnerId: string, giveawayName: string): EmbedBuilder {
@@ -52,6 +51,18 @@ export function createWinnerEmbed(winnerId: string, giveawayName: string): Embed
     .setDescription(
       `**${giveawayName}**\n\n` +
       `Congratulations to <@${winnerId}>! 🎉`
-    )
-    .setTimestamp();
+    );
+}
+
+export function createJoinGiveawayEmbed(probability: number, roleId: string, participantRoles: Record<string, number>): EmbedBuilder {
+  return new EmbedBuilder()
+    .setColor('#0099FF')
+    .setTitle('✅ You have successfully joined the giveaway!')
+    .setDescription(`
+    📊 Your probability is: ${(probability * 100).toFixed(3)}%
+
+    Role: <@&${roleId}>
+    Weight (chance): ${config.roleWeights[roleId]}×
+    Total Participants: ${Object.values(participantRoles).reduce((a, b) => a + b, 0)}
+    `);
 }

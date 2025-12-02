@@ -1,6 +1,6 @@
 import { ButtonInteraction, GuildMember } from 'discord.js';
 import { calculateProbability } from '../utils/probability';
-import { createProbabilityEmbed } from '../components/embeds';
+import { createJoinGiveawayEmbed, createProbabilityEmbed } from '../components/embeds';
 import { config, db } from '../singletons';
 
 export async function handleJoinGiveaway(interaction: ButtonInteraction) {
@@ -50,8 +50,10 @@ export async function handleJoinGiveaway(interaction: ButtonInteraction) {
   const participantRoles = await db.getParticipantCountByRole(giveaway.id);
   const probability = calculateProbability(roleId, participantRoles);
 
+  const embed = createJoinGiveawayEmbed(probability, roleId, participantRoles);
+
   await interaction.reply({
-    content: `✅ You have successfully joined the giveaway!\n📊 Your probability is: ${(probability * 100).toFixed(3)}%`,
+    embeds: [embed],
     ephemeral: true,
   });
 
