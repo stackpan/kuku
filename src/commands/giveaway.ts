@@ -44,13 +44,17 @@ export async function execute(interaction: ChatInputCommandInteraction, db: Data
         .setEmoji('📊')
     );
 
-  const message = await interaction.reply({
+  const response = await interaction.reply({
     embeds: [embed],
     components: [row],
-    fetchReply: true,
+    withResponse: true,
   });
 
-  await db.saveGiveaway(message.id);
+  const hasGiveaway = await db.isHasAGiveaway();
+
+  if (response.resource?.message?.id && !hasGiveaway) {
+    await db.saveGiveaway(response.resource?.message?.id);
+  }
 
   console.log(`Giveaway started: ${config.giveawayName}`);
 }

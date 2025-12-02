@@ -74,6 +74,12 @@ export class Database {
     await this.pool.query(query, [messageId]);
   }
 
+  async isHasAGiveaway(): Promise<boolean> {
+    const query = 'SELECT COUNT(*) FROM giveaways;';
+    const result = await this.pool.query(query);
+    return parseInt(result.rows[0].count) > 0;
+  }
+
   async close(): Promise<void> {
     await this.pool.end();
   }
