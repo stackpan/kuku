@@ -1,6 +1,7 @@
-import { Config, Participant } from '../types';
+import { Participant } from '../types';
+import { config } from '../singletons';
 
-export function calculateProbability(roleId: string, config: Config, allParticipants: Participant[]): number {
+export function calculateProbability(roleId: string, allParticipants: Participant[]): number {
   const weight = config.roleWeights[roleId] || 1;
   const totalWeight = allParticipants.reduce((sum, p) => {
     return sum + (config.roleWeights[p.roleId] || 1);
@@ -9,7 +10,7 @@ export function calculateProbability(roleId: string, config: Config, allParticip
   return (weight / totalWeight) * 100;
 }
 
-export function selectWinner(participants: Participant[], config: Config): Participant | null {
+export function selectWinner(participants: Participant[]): Participant | null {
   if (participants.length === 0) return null;
 
   const totalWeight = participants.reduce((sum, p) => {

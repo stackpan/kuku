@@ -6,18 +6,15 @@ import {
   ButtonBuilder,
   ButtonStyle,
 } from 'discord.js';
-import { Database } from '../database';
-import { loadConfig } from '../config';
 import { createGiveawayEmbed } from '../utils/embeds';
+import { config, db } from '../singletons';
 
 export const data = new SlashCommandBuilder()
   .setName('giveaway')
   .setDescription('Memulai giveaway baru')
   .setDefaultMemberPermissions(PermissionFlagsBits.Administrator);
 
-export async function execute(interaction: ChatInputCommandInteraction, db: Database) {
-  const config = loadConfig();
-
+export async function execute(interaction: ChatInputCommandInteraction) {
   if (interaction.channelId !== config.channelId) {
     await interaction.reply({
       content: `❌ Giveaway hanya bisa dimulai di channel <#${config.channelId}>`,
@@ -28,7 +25,7 @@ export async function execute(interaction: ChatInputCommandInteraction, db: Data
 
   await db.clearParticipants();
 
-  const embed = createGiveawayEmbed(config);
+  const embed = createGiveawayEmbed();
 
   const row = new ActionRowBuilder<ButtonBuilder>()
     .addComponents(

@@ -1,7 +1,7 @@
 import { EmbedBuilder } from 'discord.js';
-import { Config } from '../types';
+import { config } from '../singletons';
 
-export function createGiveawayEmbed(config: Config): EmbedBuilder {
+export function createGiveawayEmbed(): EmbedBuilder {
   return new EmbedBuilder()
     .setColor('#FFD700')
     .setTitle(`🎉 ${config.giveawayName}`)

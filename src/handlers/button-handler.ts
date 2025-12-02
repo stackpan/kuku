@@ -1,11 +1,9 @@
 import { ButtonInteraction, GuildMember } from 'discord.js';
-import { Database } from '../database';
-import { loadConfig } from '../config';
 import { calculateProbability } from '../utils/probability';
 import { createProbabilityEmbed } from '../utils/embeds';
+import { config, db } from '../singletons';
 
-export async function handleJoinGiveaway(interaction: ButtonInteraction, db: Database) {
-  const config = loadConfig();
+export async function handleJoinGiveaway(interaction: ButtonInteraction) {
   const member = interaction.member as GuildMember;
 
   const hasAllowedRole = member.roles.cache.some(role => 
@@ -49,7 +47,7 @@ export async function handleJoinGiveaway(interaction: ButtonInteraction, db: Dat
   await db.addParticipant(giveaway.id, interaction.user.id, roleId);
 
   const allParticipants = await db.getAllParticipants();
-  const probability = calculateProbability(roleId, config, allParticipants);
+  const probability = calculateProbability(roleId, allParticipants);
 
   await interaction.reply({
     content: `✅ Anda berhasil bergabung dalam giveaway!\n📊 Peluang Anda: ${probability.toFixed(4)}%`,
@@ -57,8 +55,7 @@ export async function handleJoinGiveaway(interaction: ButtonInteraction, db: Dat
   });
 }
 
-export async function handleCheckProbability(interaction: ButtonInteraction, db: Database) {
-  const config = loadConfig();
+export async function handleCheckProbability(interaction: ButtonInteraction) {
   const participant = await db.getParticipant(interaction.user.id);
 
   if (!participant) {
@@ -70,7 +67,7 @@ export async function handleCheckProbability(interaction: ButtonInteraction, db:
   }
 
   const allParticipants = await db.getAllParticipants();
-  const probability = calculateProbability(participant.roleId, config, allParticipants);
+  const probability = calculateProbability(participant.roleId, allParticipants);
   const embed = createProbabilityEmbed(probability, allParticipants.length);
 
   await interaction.reply({

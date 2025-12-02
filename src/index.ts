@@ -1,10 +1,10 @@
 import { Client, GatewayIntentBits, Collection, REST, Routes, ChannelType } from 'discord.js';
-import { env, loadConfig } from './config/index';
-import { Database } from './database/index';
+import { env } from './config/index';
 import * as giveawayCommand from './commands/giveaway';
 import { handleJoinGiveaway, handleCheckProbability } from './handlers/button-handler';
 import { selectWinner } from './utils/probability';
 import { createWinnerEmbed } from './utils/embeds';
+import { db, config } from './singletons';
 
 const client = new Client({
   intents: [
@@ -14,8 +14,6 @@ const client = new Client({
 
 const commands = new Collection<string, typeof giveawayCommand>();
 commands.set(giveawayCommand.data.name, giveawayCommand);
-
-const db = new Database();
 
 client.once('clientReady', async () => {
   console.log(`✅ Bot logged in as ${client.user?.tag}`);
@@ -43,7 +41,7 @@ client.on('interactionCreate', async interaction => {
     if (!command) return;
 
     try {
-      await command.execute(interaction, db);
+      await command.execute(interaction);
     } catch (error) {
       console.error('Error executing command:', error);
       await interaction.reply({
@@ -54,9 +52,9 @@ client.on('interactionCreate', async interaction => {
   } else if (interaction.isButton()) {
     try {
       if (interaction.customId === 'join_giveaway') {
-        await handleJoinGiveaway(interaction, db);
+        await handleJoinGiveaway(interaction);
       } else if (interaction.customId === 'check_probability') {
-        await handleCheckProbability(interaction, db);
+        await handleCheckProbability(interaction);
       }
     } catch (error) {
       console.error('Error handling button:', error);
@@ -69,7 +67,6 @@ client.on('interactionCreate', async interaction => {
 });
 
 function scheduleGiveawayEnd() {
-  const config = loadConfig();
   const endDate = new Date(config.endDate);
   const now = new Date();
   const timeUntilEnd = endDate.getTime() - now.getTime();
@@ -83,7 +80,6 @@ function scheduleGiveawayEnd() {
 }
 
 async function endGiveaway() {
-  const config = loadConfig();
   const participants = await db.getAllParticipants();
 
   if (participants.length === 0) {
@@ -91,7 +87,7 @@ async function endGiveaway() {
     return;
   }
 
-  const winner = selectWinner(participants, config);
+  const winner = selectWinner(participants);
   if (!winner) {
     console.log('❌ Gagal memilih pemenang');
     return;
