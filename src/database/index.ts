@@ -47,7 +47,6 @@ export class Database {
       giveawayId: result.rows[0].giveaway_id,
       userId: result.rows[0].user_id,
       roleId: result.rows[0].role_id,
-      probabilityCached: result.rows[0].probability_cache,
       createdAt: new Date(result.rows[0].created_at),
     };
   }
@@ -60,7 +59,6 @@ export class Database {
       giveawayId: result.rows[0].giveaway_id,
       userId: result.rows[0].user_id,
       roleId: result.rows[0].role_id,
-      probabilityCached: result.rows[0].probability_cache,
       createdAt: new Date(result.rows[0].created_at),
     };
   }

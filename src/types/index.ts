@@ -12,7 +12,6 @@ export interface Participant {
   giveawayId: string;
   userId: string;
   roleId: string;
-  probabilityCached: number | null;
   createdAt: Date;
 }
 
