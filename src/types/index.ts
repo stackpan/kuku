@@ -7,12 +7,15 @@ export interface Config {
 }
 
 export interface Participant {
+  giveawayId: number;
   userId: string;
   roleId: string;
-  probability: number;
+  createdAt: Date;
 }
 
 export interface GiveawayData {
+  id: string;
   messageId: string;
-  participants: Participant[];
+  isActive: boolean;
+  createdAt: Date;
 }

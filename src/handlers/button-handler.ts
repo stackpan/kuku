@@ -36,16 +36,20 @@ export async function handleJoinGiveaway(interaction: ButtonInteraction, db: Dat
 
   const roleId = highestWeightRole?.id || config.allowedRoles[0];
 
+  const giveaway = await db.getGiveawayByMessageId(interaction.message.id);
+
+  if (!giveaway) {
+    await interaction.reply({
+      content: '❌ Giveaway tidak ditemukan!',
+      ephemeral: true,
+    });
+    return;
+  }
+
+  await db.addParticipant(giveaway.id, interaction.user.id, roleId);
+
   const allParticipants = await db.getAllParticipants();
   const probability = calculateProbability(roleId, config, allParticipants);
-
-  await db.addParticipant(interaction.user.id, roleId, probability);
-
-  const updatedParticipants = await db.getAllParticipants();
-  for (const p of updatedParticipants) {
-    const newProb = calculateProbability(p.roleId, config, updatedParticipants);
-    await db.addParticipant(p.userId, p.roleId, newProb);
-  }
 
   await interaction.reply({
     content: `✅ Anda berhasil bergabung dalam giveaway!\n📊 Peluang Anda: ${probability.toFixed(4)}%`,
@@ -54,6 +58,7 @@ export async function handleJoinGiveaway(interaction: ButtonInteraction, db: Dat
 }
 
 export async function handleCheckProbability(interaction: ButtonInteraction, db: Database) {
+  const config = loadConfig();
   const participant = await db.getParticipant(interaction.user.id);
 
   if (!participant) {
@@ -65,7 +70,8 @@ export async function handleCheckProbability(interaction: ButtonInteraction, db:
   }
 
   const allParticipants = await db.getAllParticipants();
-  const embed = createProbabilityEmbed(participant.probability, allParticipants.length);
+  const probability = calculateProbability(participant.roleId, config, allParticipants);
+  const embed = createProbabilityEmbed(probability, allParticipants.length);
 
   await interaction.reply({
     embeds: [embed],

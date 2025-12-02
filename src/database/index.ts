@@ -1,6 +1,9 @@
 import { Pool } from 'pg';
 import { env } from '../config';
-import { Participant } from '../types';
+import { GiveawayData, Participant } from '../types';
+import * as fs from 'fs/promises';
+import * as path from 'path';
+import { randomUUID } from 'crypto';
 
 export class Database {
   private pool: Pool;
@@ -16,52 +19,39 @@ export class Database {
   }
 
   async initialize(): Promise<void> {
-    const query = `
-      CREATE TABLE IF NOT EXISTS participants (
-        user_id VARCHAR(20) PRIMARY KEY,
-        role_id VARCHAR(20) NOT NULL,
-        probability DECIMAL(10, 6) NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-      
-      CREATE TABLE IF NOT EXISTS giveaways (
-        id SERIAL PRIMARY KEY,
-        message_id VARCHAR(20) UNIQUE NOT NULL,
-        is_active BOOLEAN DEFAULT TRUE,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-    `;
-    await this.pool.query(query);
+    const schemaPath = path.join(__dirname, 'schema.sql');
+    const schema = await fs.readFile(schemaPath, 'utf-8');
+    await this.pool.query(schema);
   }
 
-  async addParticipant(userId: string, roleId: string, probability: number): Promise<void> {
+  async addParticipant(giveawayId: string, userId: string, roleId: string): Promise<void> {
     const query = `
-      INSERT INTO participants (user_id, role_id, probability)
+      INSERT INTO participants (giveaway_id, user_id, role_id)
       VALUES ($1, $2, $3)
-      ON CONFLICT (user_id) DO UPDATE
-      SET role_id = $2, probability = $3;
     `;
-    await this.pool.query(query, [userId, roleId, probability]);
+    await this.pool.query(query, [giveawayId, userId, roleId]);
   }
 
   async getParticipant(userId: string): Promise<Participant | null> {
-    const query = 'SELECT user_id, role_id, probability FROM participants WHERE user_id = $1';
+    const query = 'SELECT * FROM participants WHERE user_id = $1';
     const result = await this.pool.query(query, [userId]);
     if (result.rows.length === 0) return null;
     return {
+      giveawayId: result.rows[0].giveaway_id,
       userId: result.rows[0].user_id,
       roleId: result.rows[0].role_id,
-      probability: parseFloat(result.rows[0].probability),
+      createdAt: new Date(result.rows[0].created_at),
     };
   }
 
   async getAllParticipants(): Promise<Participant[]> {
-    const query = 'SELECT user_id, role_id, probability FROM participants';
+    const query = 'SELECT * FROM participants';
     const result = await this.pool.query(query);
     return result.rows.map(row => ({
+      giveawayId: row.giveaway_id,
       userId: row.user_id,
       roleId: row.role_id,
-      probability: parseFloat(row.probability),
+      createdAt: new Date(row.created_at),
     }));
   }
 
@@ -70,14 +60,27 @@ export class Database {
   }
 
   async saveGiveaway(messageId: string): Promise<void> {
-    const query = 'INSERT INTO giveaways (message_id) VALUES ($1) ON CONFLICT (message_id) DO NOTHING';
-    await this.pool.query(query, [messageId]);
+    const query = 'INSERT INTO giveaways (id, message_id) VALUES ($1, $2)';
+    const uuid = randomUUID();
+    await this.pool.query(query, [uuid, messageId]);
   }
 
   async isHasAGiveaway(): Promise<boolean> {
     const query = 'SELECT COUNT(*) FROM giveaways;';
     const result = await this.pool.query(query);
     return parseInt(result.rows[0].count) > 0;
+  }
+
+  async getGiveawayByMessageId(messageId: string): Promise<GiveawayData | null> {
+    const query = 'SELECT * FROM giveaways WHERE message_id = $1';
+    const result = await this.pool.query(query, [messageId]);
+    if (result.rows.length === 0) return null;
+    return {
+      id: result.rows[0].id,
+      messageId: result.rows[0].message_id,
+      isActive: result.rows[0].is_active,
+      createdAt: new Date(result.rows[0].created_at),
+    }
   }
 
   async close(): Promise<void> {
