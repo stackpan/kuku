@@ -18,8 +18,8 @@ commands.set(giveawayCommand.data.name, giveawayCommand);
 
 client.once('clientReady', async () => {
   console.log(`✅ Bot logged in as ${client.user?.tag}`);
-  await db.initialize();
-  console.log('✅ Database initialized');
+  // await db.initialize();
+  // console.log('✅ Database initialized');
 
   const rest = new REST().setToken(env.BOT_TOKEN);
   try {
