@@ -11,8 +11,29 @@ export const env = {
   DB_NAME: process.env.DB_NAME!,
 };
 
+function normalizeWeights(roleWeights: Record<string, number>): Record<string, number> {
+  let maxDecimalPlaces = 0;
+  Object.values(roleWeights).forEach(weight => {
+    const decimalPlaces = (weight.toString().split('.')[1] || '').length;
+    maxDecimalPlaces = Math.max(maxDecimalPlaces, decimalPlaces);
+  });
+
+  const multiplier = Math.pow(10, maxDecimalPlaces);
+
+  const normalizedWeights: Record<string, number> = {};
+  Object.entries(roleWeights).forEach(([roleId, weight]) => {
+    normalizedWeights[roleId] = Math.round(weight * multiplier);
+  });
+
+  return normalizedWeights;
+}
+
 export function loadConfig(): Config {
   const configPath = path.join(process.cwd(), 'config.json');
   const configFile = fs.readFileSync(configPath, 'utf-8');
-  return JSON.parse(configFile) as Config;
+  const config = JSON.parse(configFile) as Config;
+  
+  config.roleWeightsNormalized = normalizeWeights(config.roleWeights);
+  
+  return config;
 }

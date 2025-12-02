@@ -4,6 +4,7 @@ export interface Config {
   endDate: string;
   allowedRoles: string[];
   roleWeights: Record<string, number>;
+  roleWeightsNormalized?: Record<string, number>;
 }
 
 export interface Participant {
