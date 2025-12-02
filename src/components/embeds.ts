@@ -14,7 +14,7 @@ export function createGiveawayEmbed(): EmbedBuilder {
       {
         name: '✅ Required Roles',
         value: config.allowedRoles
-          .map(roleId => `- <@&${roleId}>: (${config.roleWeights[roleId]}× win chance)`)
+          .map(roleId => `- <@&${roleId}> (${config.roleWeights[roleId]}× win chance)`)
           .join('\n'),
         inline: false,
       },
@@ -35,8 +35,10 @@ export function createProbabilityEmbed(probability: number, roleId: string, tota
     .setTitle('📊 Your Winning Probability')
     .setDescription(
       `
-      **Probability: ${(probability * 100).toFixed(3)}%**\n\n
-      Chance: ${config.roleWeights[roleId]} (<@&${roleId}>)×\n
+      **Probability: ${(probability * 100).toFixed(3)}%**
+
+      Role: <@&${roleId}>
+      Weight (chance): ${config.roleWeights[roleId]}×
       Total Participants: ${totalParticipants}
       `
     )

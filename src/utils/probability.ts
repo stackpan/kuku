@@ -11,7 +11,7 @@ export function calculateProbability(roleId: string, participantCountByRole: Rec
     totalWeight += (weights[role] || 1) * count;
   });
   
-  return (weight / totalWeight) * 100;
+  return (weight / totalWeight);
 }
 
 export function selectWinner(participants: Participant[]): Participant | null {
