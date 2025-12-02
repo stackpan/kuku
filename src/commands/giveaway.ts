@@ -23,8 +23,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     return;
   }
 
-  await db.clearParticipants();
-
   const embed = createGiveawayEmbed();
 
   const row = new ActionRowBuilder<ButtonBuilder>()

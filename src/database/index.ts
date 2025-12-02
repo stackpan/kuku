@@ -75,10 +75,6 @@ export class Database {
     }));
   }
 
-  async clearParticipants(): Promise<void> {
-    await this.pool.query('DELETE FROM participants');
-  }
-
   async getParticipantCountByRole(giveawayId: string): Promise<Record<string, number>> {
     const query = `
       SELECT role_id, COUNT(*) as count
