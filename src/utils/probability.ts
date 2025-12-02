@@ -1,13 +1,16 @@
 import { Participant } from '../types';
 import { config } from '../singletons';
 
-export function calculateProbability(roleId: string, allParticipants: Participant[]): number {
+export function calculateProbability(roleId: string, participantCountByRole: Record<string, number> | Participant[]): number {
   const weight = config.roleWeights[roleId] || 1;
-  const totalWeight = allParticipants.reduce((sum, p) => {
-    return sum + (config.roleWeights[p.roleId] || 1);
-  }, 0);
   
-  return (weight / totalWeight) * 100;
+  let totalWeight = 0;
+  
+  Object.entries(participantCountByRole).forEach(([role, count]) => {
+    totalWeight += (config.roleWeights[role] || 1) * count;
+  });
+  
+  return (weight / totalWeight);
 }
 
 export function selectWinner(participants: Participant[]): Participant | null {

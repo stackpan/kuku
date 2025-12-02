@@ -45,16 +45,13 @@ export async function handleJoinGiveaway(interaction: ButtonInteraction) {
     return;
   }
 
-  await db.clearParticipantProbabilityCache(giveaway.id);
   await db.addParticipant(giveaway.id, interaction.user.id, roleId);
-
-  const allParticipants = await db.getAllParticipants();
-  const probability = calculateProbability(roleId, allParticipants);
-
-  await db.updateParticipantProbabilityCache(giveaway.id, roleId, probability);
+  
+  const participantRoles = await db.getParticipantCountByRole(giveaway.id);
+  const probability = calculateProbability(roleId, participantRoles);
 
   await interaction.reply({
-    content: `✅ Anda berhasil bergabung dalam giveaway!\n📊 Peluang Anda: ${probability.toFixed(4)}%`,
+    content: `✅ Anda berhasil bergabung dalam giveaway!\n📊 Peluang Anda: ${(probability * 100).toFixed(3)}%`,
     ephemeral: true,
   });
 
@@ -73,13 +70,8 @@ export async function handleCheckProbability(interaction: ButtonInteraction) {
     return;
   }
 
-  let probability = participant.probabilityCached;
-
-  if (!probability) {
-    const allParticipants = await db.getAllParticipants();
-    probability = calculateProbability(participant.roleId, allParticipants);
-    await db.updateParticipantProbabilityCache(participant.giveawayId, participant.roleId, probability);
-  }
+  const participantRoles = await db.getParticipantCountByRole(participant.giveawayId);
+  const probability = calculateProbability(participant.roleId, participantRoles);
 
   const embed = createProbabilityEmbed(probability);
 

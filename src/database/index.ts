@@ -36,12 +36,20 @@ export class Database {
     await this.pool.query('ROLLBACK');
   }
 
-  async addParticipant(giveawayId: string, userId: string, roleId: string): Promise<void> {
+  async addParticipant(giveawayId: string, userId: string, roleId: string): Promise<Participant> {
     const query = `
       INSERT INTO participants (giveaway_id, user_id, role_id)
       VALUES ($1, $2, $3)
+      RETURNING *
     `;
-    await this.pool.query(query, [giveawayId, userId, roleId]);
+    const result = await this.pool.query(query, [giveawayId, userId, roleId]);
+    return {
+      giveawayId: result.rows[0].giveaway_id,
+      userId: result.rows[0].user_id,
+      roleId: result.rows[0].role_id,
+      probabilityCached: result.rows[0].probability_cache,
+      createdAt: new Date(result.rows[0].created_at),
+    };
   }
 
   async getParticipant(userId: string): Promise<Participant | null> {
@@ -73,22 +81,19 @@ export class Database {
     await this.pool.query('DELETE FROM participants');
   }
 
-  async clearParticipantProbabilityCache(giveawayId: string): Promise<void> {
+  async getParticipantCountByRole(giveawayId: string): Promise<Record<string, number>> {
     const query = `
-      UPDATE participants
-      SET probability_cache = NULL
+      SELECT role_id, COUNT(*) as count
+      FROM participants
       WHERE giveaway_id = $1
+      GROUP BY role_id
     `;
-    await this.pool.query(query, [giveawayId]);
-  }
-
-  async updateParticipantProbabilityCache(giveawayId: string, roleId: string, probabilityCached: number): Promise<void> {
-    const query = `
-      UPDATE participants
-      SET probability_cache = $3
-      WHERE giveaway_id = $1 AND role_id = $2
-    `;
-    await this.pool.query(query, [giveawayId, roleId, probabilityCached]);
+    const result = await this.pool.query(query, [giveawayId]);
+    const counts: Record<string, number> = {};
+    result.rows.forEach(row => {
+      counts[row.role_id] = parseInt(row.count);
+    });
+    return counts;
   }
 
   async saveGiveaway(messageId: string): Promise<void> {

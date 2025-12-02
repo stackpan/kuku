@@ -18,7 +18,7 @@ export function createProbabilityEmbed(probability: number): EmbedBuilder {
     .setColor('#00FFFF')
     .setTitle('📊 Peluang Menang Anda')
     .setDescription(
-      `**Probabilitas: ${probability.toFixed(4)}%**`
+      `**Probabilitas: ${(probability * 100).toFixed(3)}%**`
     )
     .setTimestamp();
 }
