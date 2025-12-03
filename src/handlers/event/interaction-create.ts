@@ -27,10 +27,10 @@ export default async function handleInteractionCreate(interaction: Interaction) 
   } else if (interaction.isButton()) {
     try {
       switch (interaction.customId) {
-        case 'join_giveaway':
+        case 'joinGiveaway':
           await handleJoinGiveaway(interaction);
           break;
-        case 'check_probability':
+        case 'checkGiveawayProbability':
           await handleCheckProbability(interaction);
           break;
         default:

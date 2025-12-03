@@ -2,33 +2,132 @@ import {
   SlashCommandBuilder,
   ChatInputCommandInteraction,
   PermissionFlagsBits,
+  InteractionContextType,
+  ModalBuilder,
+  LabelBuilder,
+  TextInputBuilder,
+  TextInputStyle,
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  InteractionContextType,
 } from 'discord.js';
+import { connection, giveawayRepository, giveawayScheduler, guildGiveawayWeightedRoleRepository } from '../singletons';
 import createGiveawayEmbed from '../components/embeds/create-giveaway';
-import { connection, giveawayRepository, guildGiveawayWeightedRoleRepository, giveawayScheduler } from '../singletons';
 
 export const data = new SlashCommandBuilder()
   .setContexts(InteractionContextType.Guild)
   .setName('giveaway')
   .setDescription('Start a new giveaway')
-  .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
-  .addStringOption((option) => option.setName('name').setDescription('The giveaway name').setRequired(true))
-  .addStringOption((option) => option.setName('description').setDescription('The giveaway description').setRequired(true))
-  .addStringOption((option) => option.setName('ends_at').setDescription('The giveaway end time (YYYY-MM-DD HH:mm)').setRequired(true))
-  .addIntegerOption((option) => option.setName('winner_count').setDescription('The number of winners').setMinValue(1).setRequired(true));
+  .setDefaultMemberPermissions(PermissionFlagsBits.Administrator);
 
 export async function execute(interaction: ChatInputCommandInteraction) {
-  await interaction.deferReply();
+  const now = new Date();
+  now.setDate(now.getDate() + 1);
+  const pad = (n: number) => n.toString().padStart(2, '0');
+  const defaultEndsAt = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+
+  const modal = new ModalBuilder()
+    .setCustomId('createGiveawayModal')
+    .setTitle('Create Giveaway')
+    .addLabelComponents(
+      new LabelBuilder()
+        .setLabel('Name')
+        .setDescription('What you are giving away')
+        .setTextInputComponent(
+          new TextInputBuilder()
+            .setCustomId('giveawayNameInput')
+            .setStyle(TextInputStyle.Short)
+            .setPlaceholder(`${interaction.guild?.name}'s Prize`)
+            .setRequired(true)
+            .setMinLength(1)
+            .setMaxLength(100)
+        ),
+      new LabelBuilder()
+        .setLabel('Description')
+        .setDescription('What is the giveaway about?')
+        .setTextInputComponent(
+          new TextInputBuilder()
+            .setCustomId('giveawayDescriptionInput')
+            .setStyle(TextInputStyle.Paragraph)
+            .setPlaceholder('Lorem ipsum dolor sit amet, consectetur adipiscing elit.')
+            .setRequired(true)
+            .setMinLength(1)
+            .setMaxLength(255)
+        ),
+      new LabelBuilder()
+        .setLabel('Ends At')
+        .setDescription('When does the giveaway end? Format: YYYY-MM-DD hh:mm')
+        .setTextInputComponent(
+          new TextInputBuilder()
+            .setCustomId('giveawayEndsAtInput')
+            .setStyle(TextInputStyle.Short)
+            .setRequired(true)
+            .setPlaceholder(defaultEndsAt)
+            .setValue(defaultEndsAt)
+            .setMinLength(16)
+            .setMaxLength(16)
+        ),
+      new LabelBuilder()
+        .setLabel('Winner Count')
+        .setDescription('How many winners? (1-10)')
+        .setTextInputComponent(
+          new TextInputBuilder()
+            .setCustomId('giveawayWinnerCountInput')
+            .setStyle(TextInputStyle.Short)
+            .setPlaceholder('1')
+            .setValue('1')
+            .setRequired(true)
+            .setMinLength(1)
+            .setMaxLength(2)
+        ),
+      new LabelBuilder()
+        .setLabel('Hosted By')
+        .setDescription('Who hosted the giveaway?')
+        .setTextInputComponent(
+          new TextInputBuilder()
+            .setCustomId('giveawayHostedByInput')
+            .setStyle(TextInputStyle.Short)
+            .setRequired(true)
+            .setPlaceholder('John Doe')
+            .setValue(interaction.user.displayName)
+            .setMinLength(1)
+            .setMaxLength(20)
+        ),
+    );
+
+  await interaction.showModal(modal);
+  const modalSubmit = await interaction.awaitModalSubmit({
+    filter: (i) => i.customId === 'createGiveawayModal',
+    time: 60000,
+  });
+
+  await modalSubmit.deferReply();
   await connection.beginTransaction();
 
   const giveawayDto = {
-    name: interaction.options.getString('name', true),
-    description: interaction.options.getString('description', true),
-    endsAt: new Date(interaction.options.getString('ends_at', true).replace(' ', 'T')),
-    winnerCount: interaction.options.getInteger('winner_count', true),
+    name: modalSubmit.fields.getTextInputValue('giveawayNameInput'),
+    description: modalSubmit.fields.getTextInputValue('giveawayDescriptionInput'),
+    endsAt: new Date(modalSubmit.fields.getTextInputValue('giveawayEndsAtInput').replace(' ', 'T')),
+    winnerCount: parseInt(modalSubmit.fields.getTextInputValue('giveawayWinnerCountInput')),
+    hostedBy: modalSubmit.fields.getTextInputValue('giveawayHostedByInput'),
+  }
+
+  if (isNaN(giveawayDto.endsAt.getTime())) {
+    await modalSubmit.editReply({ content: '❌ Invalid date format. Please use YYYY-MM-DD hh:mm.' });
+    await connection.rollbackTransaction();
+    return;
+  }
+
+  if (giveawayDto.endsAt <= new Date()) {
+    await modalSubmit.editReply({ content: '❌ The giveaway must end in the future.' });
+    await connection.rollbackTransaction();
+    return;
+  }
+
+  if (isNaN(giveawayDto.winnerCount) || giveawayDto.winnerCount < 1 || giveawayDto.winnerCount > 10) {
+    await modalSubmit.editReply({ content: '❌ Winner count must be an integer between 1 and 10.' });
+    await connection.rollbackTransaction();
+    return;
   }
 
   const guildId = interaction.guildId!;
@@ -45,18 +144,18 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   const row = new ActionRowBuilder<ButtonBuilder>()
     .addComponents(
       new ButtonBuilder()
-        .setCustomId('join_giveaway')
+        .setCustomId('joinGiveaway')
         .setLabel('Join Giveaway')
         .setStyle(ButtonStyle.Primary)
         .setEmoji('🎉'),
       new ButtonBuilder()
-        .setCustomId('check_probability')
+        .setCustomId('checkGiveawayProbability')
         .setLabel('Probability')
         .setStyle(ButtonStyle.Secondary)
         .setEmoji('📊')
     );
 
-  const message = await interaction.editReply({
+  const message = await modalSubmit.editReply({
     content: '# 🎉 Giveaway Started!',
     embeds: [embed],
     components: [row],
