@@ -1,4 +1,4 @@
-import { Client, TextChannel } from 'discord.js';
+import { Client, TextChannel, ActionRowBuilder } from 'discord.js';
 import { giveawayRepository, participantRepository } from '../singletons';
 import { Giveaway, WeightedRolesGiveaway } from '../types';
 import createWinnerEmbed from '../components/embeds/giveaway-winner';
@@ -38,6 +38,20 @@ export class GiveawayScheduler {
         console.error(`Channel ${giveaway.channelId} not found for giveaway ${giveaway.messageId}`);
         await giveawayRepository.delete(giveaway.messageId);
         return;
+      }
+
+      try {
+        const giveawayMessage = await channel.messages.fetch(giveaway.messageId);
+        if (giveawayMessage) {
+          const disabledRows = giveawayMessage.components.map(row => {
+            const newRow = ActionRowBuilder.from(row as any);
+            newRow.components.forEach((component: any) => component.setDisabled(true));
+            return newRow;
+          });
+          await giveawayMessage.edit({ components: disabledRows as any });
+        }
+      } catch (error) {
+        console.warn(`Failed to disable buttons for giveaway ${giveaway.messageId}:`, error);
       }
 
       if (participants.length === 0) {
