@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS giveaways (
     description VARCHAR(255) NOT NULL,
     guild_id VARCHAR(20) NOT NULL,
     ends_at TIMESTAMP NOT NULL,
-    active_weighted_roles_config_id UUID,
+    active_weighted_roles_config_id SMALLINT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
