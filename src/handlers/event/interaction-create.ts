@@ -1,5 +1,5 @@
 import { Interaction } from "discord.js";
-import { commands } from "../../commands/registry";
+import { commands } from "../../command-registry";
 import handleJoinGiveaway from "../button/join-giveaway";
 import handleCheckProbability from "../button/check-probability";
 
