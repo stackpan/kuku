@@ -9,6 +9,11 @@ export default async function handleGuildMemberUpdate(oldMember: GuildMember | P
 
   const participants = await participantRepository.getAllWithGiveawayByUserIdAndGuild(userId, guildId);
 
+  if (participants.length === 0) {
+    await connection.rollbackTransaction();
+    return; 
+  }
+
   for (const participant of participants) {
     const giveaway = participant.giveaway;
 
@@ -33,4 +38,5 @@ export default async function handleGuildMemberUpdate(oldMember: GuildMember | P
   }
 
   await connection.commitTransaction();
+  console.log(`${userId} updated their roles in ${guildId}. Updated their participants.`);
 }

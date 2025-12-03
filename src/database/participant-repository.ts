@@ -173,4 +173,17 @@ export default class ParticipantRepository {
     `;
     await this.database.pool.query(query, [giveawayMessageId, userId, roleId]);
   }
+
+  async deleteByUserIdAndGuild(userId: string, guildId: string): Promise<boolean> {
+    const query = `
+      DELETE FROM participants p
+      USING giveaways g
+      WHERE p.giveaway_message_id = g.message_id
+      AND p.user_id = $1
+      AND g.guild_id = $2
+    `;
+
+    const result = await this.database.pool.query(query, [userId, guildId]);
+    return (result.rowCount ?? 0) > 0;
+  }
 }
