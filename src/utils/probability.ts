@@ -1,6 +1,6 @@
 import { GuildGiveawayWeightedRole, Participant } from '../types';
 
-export function calculateProbability(roleId: string, weightedRoles: GuildGiveawayWeightedRole[], participantCountByRole: Record<string, number>): number {
+export function calculateProbability(roleId: string, weightedRoles: GuildGiveawayWeightedRole[], participantCountByRole: Record<string, number>): { probability: number; weight: number; totalWeight: number } {
   const weights = weightedRoles.reduce((acc, wr) => {
     acc[wr.roleId] = wr.weightNormalized;
     return acc;
@@ -14,7 +14,7 @@ export function calculateProbability(roleId: string, weightedRoles: GuildGiveawa
     totalWeight += (weights[role] || 0) * count;
   });
   
-  return (weight / totalWeight);
+  return { probability: weight / totalWeight, weight, totalWeight };
 }
 
 export function selectWinner(weightedRoles: GuildGiveawayWeightedRole[], participants: Participant[]): Participant | null {

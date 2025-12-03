@@ -29,13 +29,14 @@ export default async function handleCheckProbability(interaction: ButtonInteract
   }
 
   const participantRoles = await participantRepository.getCountsGroupByRole(giveaway.messageId);
-  const probability = calculateProbability(participant.roleId, giveaway.weightedRoles, participantRoles);
+  const { probability, weight, totalWeight } = calculateProbability(participant.roleId, giveaway.weightedRoles, participantRoles);
 
   const embed = createCheckProbabilityEmbed({
     probability,
     roleId: participant.roleId,
-    roleWeight: giveaway.weightedRoles.find(wr => wr.roleId === participant.roleId)?.weight || 0,
+    weight,
     totalParticipants: Object.values(participantRoles).reduce((a, b) => a + b, 0),
+    totalWeights: totalWeight,
   });
 
   await interaction.reply({

@@ -3,19 +3,21 @@ import { EmbedBuilder } from "discord.js";
 interface CreateJoinGiveawayEmbedParams {
   probability: number;
   roleId: string;
-  roleWeight: number;
+  weight: number;
   totalParticipants: number;
+  totalWeights: number;
 }
 
-export default function createJoinGiveawayEmbed({ probability, roleId, roleWeight, totalParticipants }: CreateJoinGiveawayEmbedParams): EmbedBuilder {
+export default function createJoinGiveawayEmbed({ probability, roleId, weight, totalParticipants, totalWeights }: CreateJoinGiveawayEmbedParams): EmbedBuilder {
   return new EmbedBuilder()
     .setColor('#0099FF')
     .setTitle('✅ You have successfully joined the giveaway!')
     .setDescription(`
-    📊 **Your winning probability in position #1:** \`${(probability * 100).toFixed(2)}%\`
+    1️⃣ **Your winning probability in position #1:** \`${(probability * 100).toFixed(2)}%\`
 
-    Role: <@&${roleId}>
-    Weight (chance): ${roleWeight}×
+    Your Role: <@&${roleId}>
+    Your Weight: ${weight}
+    Total Weights: ${totalWeights}
     Total Participants: ${totalParticipants}
     `);
 }

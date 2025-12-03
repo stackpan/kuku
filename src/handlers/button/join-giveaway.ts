@@ -68,13 +68,14 @@ export default async function handleJoinGiveaway(interaction: ButtonInteraction)
   });
   
   const participantRoles = await participantRepository.getCountsGroupByRole(giveaway.messageId);
-  const probability = calculateProbability(roleId, giveaway.weightedRoles, participantRoles);
+  const { probability, weight, totalWeight } = calculateProbability(roleId, giveaway.weightedRoles, participantRoles);
 
   const embed = createJoinGiveawayEmbed({
     probability,
     roleId,
-    roleWeight: giveaway.weightedRoles.find(wr => wr.roleId === roleId)?.weight || 0,
+    weight,
     totalParticipants: Object.values(participantRoles).reduce((a, b) => a + b, 0),
+    totalWeights: totalWeight,
   });
 
   await interaction.reply({
