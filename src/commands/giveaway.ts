@@ -8,7 +8,7 @@ import {
   InteractionContextType,
 } from 'discord.js';
 import createGiveawayEmbed from '../components/embeds/create-giveaway';
-import { connection, giveawayRepository, guildGiveawayWeightedRoleRepository } from '../singletons';
+import { connection, giveawayRepository, guildGiveawayWeightedRoleRepository, giveawayScheduler } from '../singletons';
 
 export const data = new SlashCommandBuilder()
   .setContexts(InteractionContextType.Guild)
@@ -62,8 +62,11 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     ...giveawayDto,
     messageId: message.id,
     guildId: interaction.guildId!,
+    channelId: interaction.channelId!,
     activeWeightedRolesConfigId: weightedRolesConfigId,
   });
+
+  giveawayScheduler.schedule(giveaway);
 
   console.log(`Giveaway started: ${giveaway.name}`);
   await connection.commitTransaction();

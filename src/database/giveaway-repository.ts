@@ -8,10 +8,10 @@ export default class GiveawayRepository {
     this.database = database;
   }
 
-  async save(dto: Pick<Giveaway, 'messageId' | 'name' | 'description' | 'guildId' | 'endsAt' | 'activeWeightedRolesConfigId'>): Promise<Giveaway> {
+  async save(dto: Pick<Giveaway, 'messageId' | 'name' | 'description' | 'guildId' | 'channelId' | 'endsAt' | 'activeWeightedRolesConfigId'>): Promise<Giveaway> {
     const query = `
-      INSERT INTO giveaways (message_id, name, description, guild_id, ends_at, active_weighted_roles_config_id)
-      VALUES ($1, $2, $3, $4, $5, $6)
+      INSERT INTO giveaways (message_id, name, description, guild_id, channel_id, ends_at, active_weighted_roles_config_id)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
       RETURNING *
     `;
 
@@ -20,6 +20,7 @@ export default class GiveawayRepository {
       dto.name,
       dto.description,
       dto.guildId,
+      dto.channelId,
       dto.endsAt,
       dto.activeWeightedRolesConfigId,
     ]);
@@ -29,6 +30,7 @@ export default class GiveawayRepository {
       name: result.rows[0].name,
       description: result.rows[0].description,
       guildId: result.rows[0].guild_id,
+      channelId: result.rows[0].channel_id,
       endsAt: result.rows[0].ends_at,
       activeWeightedRolesConfigId: result.rows[0].active_weighted_roles_config_id,
       createdAt: new Date(result.rows[0].created_at),
@@ -62,6 +64,7 @@ export default class GiveawayRepository {
       name: first.name,
       description: first.description,
       guildId: first.guild_id,
+      channelId: first.channel_id,
       endsAt: first.ends_at,
       activeWeightedRolesConfigId: first.active_weighted_roles_config_id,
       createdAt: new Date(first.created_at),
@@ -80,5 +83,61 @@ export default class GiveawayRepository {
     }
 
     return giveaway;
+  }
+
+  async getAll(): Promise<(Giveaway | WeightedRolesGiveaway)[]> {
+    const query = `
+      SELECT 
+        g.*,
+        wr.guild_id AS wr_guild_id,
+        wr.id AS wr_id,
+        wr.role_id AS wr_role_id,
+        wr.weight AS wr_weight,
+        wr.weight_normalized AS wr_weight_normalized
+      FROM giveaways g
+      LEFT JOIN guild_giveaway_weighted_roles wr
+        ON wr.guild_id = g.guild_id
+        AND wr.id = g.active_weighted_roles_config_id
+    `;
+
+    const result = await this.database.pool.query(query);
+    const map = new Map<string, Giveaway | WeightedRolesGiveaway>();
+
+    for (const row of result.rows) {
+      if (!map.has(row.message_id)) {
+        const giveaway: Giveaway = {
+          messageId: row.message_id,
+          name: row.name,
+          description: row.description,
+          guildId: row.guild_id,
+          channelId: row.channel_id,
+          endsAt: row.ends_at,
+          activeWeightedRolesConfigId: row.active_weighted_roles_config_id,
+          createdAt: new Date(row.created_at),
+        };
+        map.set(row.message_id, giveaway);
+      }
+
+      const giveaway = map.get(row.message_id)!;
+      if (row.wr_id !== null) {
+        if (!('weightedRoles' in giveaway)) {
+          (giveaway as WeightedRolesGiveaway).weightedRoles = [];
+        }
+        (giveaway as WeightedRolesGiveaway).weightedRoles.push({
+          guildId: row.wr_guild_id,
+          id: row.wr_id,
+          roleId: row.wr_role_id,
+          weight: row.wr_weight,
+          weightNormalized: row.wr_weight_normalized,
+        });
+      }
+    }
+
+    return Array.from(map.values());
+  }
+
+  async delete(messageId: string): Promise<void> {
+    const query = `DELETE FROM giveaways WHERE message_id = $1`;
+    await this.database.pool.query(query, [messageId]);
   }
 }

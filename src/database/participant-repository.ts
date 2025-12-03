@@ -108,7 +108,7 @@ export default class ParticipantRepository {
     const query = `
       SELECT 
         p.giveaway_message_id, p.user_id, p.role_id, p.created_at,
-        g.message_id AS g_message_id, g.name, g.description, g.guild_id, g.ends_at, g.active_weighted_roles_config_id, g.created_at AS g_created_at,
+        g.message_id AS g_message_id, g.name, g.description, g.guild_id, g.channel_id, g.ends_at, g.active_weighted_roles_config_id, g.created_at AS g_created_at,
         wr.guild_id AS wr_guild_id, wr.id AS wr_id, wr.role_id AS wr_role_id, wr.weight AS wr_weight, wr.weight_normalized AS wr_weight_normalized
       FROM participants p
       JOIN giveaways g ON p.giveaway_message_id = g.message_id
@@ -129,6 +129,7 @@ export default class ParticipantRepository {
           name: row.name,
           description: row.description,
           guildId: row.guild_id,
+          channelId: row.channel_id,
           endsAt: row.ends_at,
           activeWeightedRolesConfigId: row.active_weighted_roles_config_id,
           createdAt: new Date(row.g_created_at),
