@@ -1,5 +1,6 @@
 import { Events } from 'discord.js';
 import { env } from 'process';
+import { createServer } from 'http';
 import handleClientReady from './handlers/event/client-ready';
 import handleInteractionCreate from './handlers/event/interaction-create';
 import handleGuildMemberUpdate from './handlers/event/guild-member-update';
@@ -10,6 +11,16 @@ client.once(Events.ClientReady, handleClientReady);
 client.on(Events.InteractionCreate, handleInteractionCreate);
 client.on(Events.GuildMemberUpdate, handleGuildMemberUpdate);
 client.on(Events.GuildMemberRemove, handleGuildMemberRemove);
+
+createServer((req, res) => {
+  if (req.url === '/kaithhealthcheck' && req.method === 'GET') {
+    res.writeHead(200);
+    res.end();
+  } else {
+    res.writeHead(404);
+    res.end();
+  }
+}).listen(env.PORT || 3000);
 
 client.login(env.BOT_TOKEN);
 
