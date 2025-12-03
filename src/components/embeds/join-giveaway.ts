@@ -12,7 +12,7 @@ export default function createJoinGiveawayEmbed({ probability, roleId, roleWeigh
     .setColor('#0099FF')
     .setTitle('✅ You have successfully joined the giveaway!')
     .setDescription(`
-    📊 Your probability is: ${(probability * 100).toFixed(3)}%
+    📊 **Your winning probability in position #1:** \`${(probability * 100).toFixed(2)}%\`
 
     Role: <@&${roleId}>
     Weight (chance): ${roleWeight}×

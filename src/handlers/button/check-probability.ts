@@ -1,4 +1,4 @@
-import createProbabilityEmbed from '../../components/embeds/check-probability';
+import createCheckProbabilityEmbed from '../../components/embeds/check-probability';
 import { ButtonInteraction } from 'discord.js';
 import { calculateProbability } from '../../utils/probability';
 import { connection, giveawayRepository, participantRepository } from '../../singletons';
@@ -31,7 +31,7 @@ export default async function handleCheckProbability(interaction: ButtonInteract
   const participantRoles = await participantRepository.getCountsGroupByRole(giveaway.messageId);
   const probability = calculateProbability(participant.roleId, giveaway.weightedRoles, participantRoles);
 
-  const embed = createProbabilityEmbed({
+  const embed = createCheckProbabilityEmbed({
     probability,
     roleId: participant.roleId,
     roleWeight: giveaway.weightedRoles.find(wr => wr.roleId === participant.roleId)?.weight || 0,
