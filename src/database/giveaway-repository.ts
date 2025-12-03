@@ -10,8 +10,8 @@ export default class GiveawayRepository {
 
   async save(dto: Pick<Giveaway, 'messageId' | 'name' | 'description' | 'guildId' | 'endsAt' | 'activeWeightedRolesConfigId'>): Promise<Giveaway> {
     const query = `
-      INSERT INTO giveaways (message_id, name, description, guild_id, ends_at)
-      VALUES ($1, $2, $3, $4, $5)
+      INSERT INTO giveaways (message_id, name, description, guild_id, ends_at, active_weighted_roles_config_id)
+      VALUES ($1, $2, $3, $4, $5, $6)
       RETURNING *
     `;
 
@@ -21,6 +21,7 @@ export default class GiveawayRepository {
       dto.description,
       dto.guildId,
       dto.endsAt,
+      dto.activeWeightedRolesConfigId,
     ]);
 
     return {

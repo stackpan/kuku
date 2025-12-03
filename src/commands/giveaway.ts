@@ -20,6 +20,8 @@ export const data = new SlashCommandBuilder()
   .addStringOption((option) => option.setName('ends_at').setDescription('The giveaway end time (YYYY-MM-DD HH:mm)').setRequired(true));
 
 export async function execute(interaction: ChatInputCommandInteraction) {
+  await interaction.deferReply();
+
   const giveawayDto = {
     name: interaction.options.getString('name', true),
     description: interaction.options.getString('description', true),
@@ -50,20 +52,14 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         .setEmoji('📊')
     );
 
-  const response = await interaction.reply({
+  const message = await interaction.editReply({
     embeds: [embed],
     components: [row],
-    withResponse: true,
   });
-
-  if (!response.resource?.message?.id) {
-    console.error('Failed to get message ID after sending giveaway message.');
-    return;
-  }
 
   const giveaway = await giveawayRepository.save({
     ...giveawayDto,
-    messageId: response.resource.message.id,
+    messageId: message.id,
     guildId: interaction.guildId!,
     activeWeightedRolesConfigId: weightedRolesConfigId,
   });
