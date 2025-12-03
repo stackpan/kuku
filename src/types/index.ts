@@ -5,6 +5,7 @@ export interface Giveaway {
   guildId: string;
   channelId: string;
   endsAt: Date;
+  winnerCount: number;
   activeWeightedRolesConfigId: number | null;
   createdAt: Date;
 }

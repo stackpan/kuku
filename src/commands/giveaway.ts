@@ -17,16 +17,18 @@ export const data = new SlashCommandBuilder()
   .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
   .addStringOption((option) => option.setName('name').setDescription('The giveaway name').setRequired(true))
   .addStringOption((option) => option.setName('description').setDescription('The giveaway description').setRequired(true))
-  .addStringOption((option) => option.setName('ends_at').setDescription('The giveaway end time (YYYY-MM-DD HH:mm)').setRequired(true));
+  .addStringOption((option) => option.setName('ends_at').setDescription('The giveaway end time (YYYY-MM-DD HH:mm)').setRequired(true))
+  .addIntegerOption((option) => option.setName('winner_count').setDescription('The number of winners').setMinValue(1).setRequired(true));
 
 export async function execute(interaction: ChatInputCommandInteraction) {
-  await connection.beginTransaction();
   await interaction.deferReply();
+  await connection.beginTransaction();
 
   const giveawayDto = {
     name: interaction.options.getString('name', true),
     description: interaction.options.getString('description', true),
     endsAt: new Date(interaction.options.getString('ends_at', true).replace(' ', 'T')),
+    winnerCount: interaction.options.getInteger('winner_count', true),
   }
 
   const guildId = interaction.guildId!;

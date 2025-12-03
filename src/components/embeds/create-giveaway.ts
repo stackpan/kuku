@@ -5,10 +5,11 @@ interface CreateGiveawayEmbedParams {
   name: string;
   description: string;
   endsAt: Date;
+  winnerCount: number;
   roles: GuildGiveawayWeightedRole[];
 }
 
-export default function createGiveawayEmbed({ name, description, endsAt, roles }: CreateGiveawayEmbedParams): EmbedBuilder {
+export default function createGiveawayEmbed({ name, description, endsAt, winnerCount, roles }: CreateGiveawayEmbedParams): EmbedBuilder {
   return new EmbedBuilder()
     .setColor('#FFD700')
     .setTitle(`🎉 ${name}`)
@@ -19,6 +20,11 @@ export default function createGiveawayEmbed({ name, description, endsAt, roles }
         value: roles
           .map(role => `- <@&${role.roleId}> (${role.weight}× win chance)`)
           .join('\n'),
+        inline: false,
+      },
+      {
+        name: '🏆 Winners',
+        value: `${winnerCount}`,
         inline: false,
       },
       {

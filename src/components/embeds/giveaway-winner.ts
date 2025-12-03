@@ -1,18 +1,18 @@
 import { EmbedBuilder } from "discord.js";
 
 interface CreateWinnerEmbedParams {
-  userId: string;
-  userAvatar: string | null;
+  winnerIds: string[];
   giveawayName: string;
 }
 
-export default function createWinnerEmbed({ userId, userAvatar, giveawayName }: CreateWinnerEmbedParams): EmbedBuilder {
+export default function createWinnerEmbed({ winnerIds, giveawayName }: CreateWinnerEmbedParams): EmbedBuilder {
+  const winnersList = winnerIds.map(id => `<@${id}>`).join(', ');
+
   return new EmbedBuilder()
     .setColor('#00FF00')
     .setTitle('🎊 Giveaway Winner!')
-    .setThumbnail(userAvatar)
     .setDescription(
       `**${giveawayName}**\n\n` +
-      `Congratulations to <@${userId}>! 🎉`
+      `Congratulations to ${winnersList}! 🎉`
     );
 }

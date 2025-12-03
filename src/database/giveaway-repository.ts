@@ -8,10 +8,10 @@ export default class GiveawayRepository {
     this.database = database;
   }
 
-  async save(dto: Pick<Giveaway, 'messageId' | 'name' | 'description' | 'guildId' | 'channelId' | 'endsAt' | 'activeWeightedRolesConfigId'>): Promise<Giveaway> {
+  async save(dto: Pick<Giveaway, 'messageId' | 'name' | 'description' | 'guildId' | 'channelId' | 'endsAt' | 'winnerCount' | 'activeWeightedRolesConfigId'>): Promise<Giveaway> {
     const query = `
-      INSERT INTO giveaways (message_id, name, description, guild_id, channel_id, ends_at, active_weighted_roles_config_id)
-      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      INSERT INTO giveaways (message_id, name, description, guild_id, channel_id, ends_at, winner_count, active_weighted_roles_config_id)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       RETURNING *
     `;
 
@@ -22,6 +22,7 @@ export default class GiveawayRepository {
       dto.guildId,
       dto.channelId,
       dto.endsAt,
+      dto.winnerCount,
       dto.activeWeightedRolesConfigId,
     ]);
 
@@ -32,6 +33,7 @@ export default class GiveawayRepository {
       guildId: result.rows[0].guild_id,
       channelId: result.rows[0].channel_id,
       endsAt: result.rows[0].ends_at,
+      winnerCount: result.rows[0].winner_count,
       activeWeightedRolesConfigId: result.rows[0].active_weighted_roles_config_id,
       createdAt: new Date(result.rows[0].created_at),
     }
@@ -66,6 +68,7 @@ export default class GiveawayRepository {
       guildId: first.guild_id,
       channelId: first.channel_id,
       endsAt: first.ends_at,
+      winnerCount: first.winner_count,
       activeWeightedRolesConfigId: first.active_weighted_roles_config_id,
       createdAt: new Date(first.created_at),
     };
@@ -112,6 +115,7 @@ export default class GiveawayRepository {
           guildId: row.guild_id,
           channelId: row.channel_id,
           endsAt: row.ends_at,
+          winnerCount: row.winner_count,
           activeWeightedRolesConfigId: row.active_weighted_roles_config_id,
           createdAt: new Date(row.created_at),
         };
