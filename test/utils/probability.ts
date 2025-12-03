@@ -1,8 +1,8 @@
 import { loadConfig } from '../../src/config';
-import { Database } from '../../src/database';
+import { Connection } from '../../src/database/connection';
 import { calculateProbability } from '../../src/utils/probability';
 
-const db = new Database();
+const db = new Connection();
 
 const config = loadConfig();
 db.getAllParticipants().then((participants) => {
@@ -11,3 +11,4 @@ db.getAllParticipants().then((participants) => {
 
     console.log(`Role: ${roleId}\nWeight: ${config.roleWeights[roleId]}\nTotal participants: ${participants.length}\nProbability: ${probability}`);
 })
+

@@ -1,23 +1,28 @@
-export interface Config {
-  channelId: string;
-  giveawayName: string;
-  giveawayDescription: string;
-  endDate: string;
-  allowedRoles: string[];
-  roleWeights: Record<string, number>;
-  roleWeightsNormalized?: Record<string, number>;
+export interface Giveaway {
+  messageId: string;
+  name: string;
+  description: string;
+  guildId: string;
+  endsAt: Date;
+  activeWeightedRolesConfigId: number | null;
+  createdAt: Date;
+}
+
+export interface GuildGiveawayWeightedRole {
+  guildId: string;
+  id: number;
+  roleId: string;
+  weight: number;
+  weightNormalized: number;
 }
 
 export interface Participant {
-  giveawayId: string;
+  giveawayMessageId: string;
   userId: string;
   roleId: string;
   createdAt: Date;
 }
 
-export interface GiveawayData {
-  id: string;
-  messageId: string;
-  isActive: boolean;
-  createdAt: Date;
+export interface WeightedRolesGiveaway extends Giveaway {
+  weightedRoles: GuildGiveawayWeightedRole[];
 }

@@ -1,10 +1,8 @@
-import { Client, GatewayIntentBits, Collection, REST, Routes, ChannelType, Events } from 'discord.js';
-import { env } from './config/index';
+import { Client, GatewayIntentBits, Collection, ChannelType, Events } from 'discord.js';
 import * as giveawayCommand from './commands/giveaway';
-import { handleJoinGiveaway, handleCheckProbability } from './handlers/button-handler';
 import { selectWinner } from './utils/probability';
-import { createWinnerEmbed } from './components/embeds';
-import { db, config } from './singletons';
+import { env } from 'process';
+import handleClientReady from './handlers/event/client-ready';
 
 const client = new Client({
   intents: [
@@ -16,27 +14,9 @@ const client = new Client({
 const commands = new Collection<string, typeof giveawayCommand>();
 commands.set(giveawayCommand.data.name, giveawayCommand);
 
-client.once('clientReady', async () => {
-  console.log(`✅ Bot logged in as ${client.user?.tag}`);
-  // await db.initialize();
-  // console.log('✅ Database initialized');
+client.once(Events.ClientReady, handleClientReady);
 
-  const rest = new REST().setToken(env.BOT_TOKEN);
-  try {
-    console.log('🔄 Registering slash commands...');
-    await rest.put(
-      Routes.applicationCommands(client.user!.id),
-      { body: [giveawayCommand.data.toJSON()] }
-    );
-    console.log('✅ Slash commands registered');
-  } catch (error) {
-    console.error('❌ Error registering commands:', error);
-  }
-
-  scheduleGiveawayEnd();
-});
-
-client.on('interactionCreate', async interaction => {
+client.on(Events.InteractionCreate, async interaction => {
   if (interaction.isChatInputCommand()) {
     const command = commands.get(interaction.commandName);
     if (!command) return;
