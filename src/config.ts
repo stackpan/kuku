@@ -8,4 +8,5 @@ export const env = {
   DB_PASSWORD: process.env.DB_PASSWORD!,
   DB_NAME: process.env.DB_NAME!,
   DB_SSL: process.env.DB_SSL === 'true',
+  PORT: parseInt(process.env.PORT || '3000'),
 };

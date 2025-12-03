@@ -1,5 +1,5 @@
 import { Events } from 'discord.js';
-import { env } from 'process';
+import { env } from './config';
 import { createServer } from 'http';
 import handleClientReady from './handlers/event/client-ready';
 import handleInteractionCreate from './handlers/event/interaction-create';
@@ -20,7 +20,7 @@ createServer((req, res) => {
     res.writeHead(404);
     res.end();
   }
-}).listen(env.PORT || 3000);
+}).listen(env.PORT);
 
 client.login(env.BOT_TOKEN);
 
