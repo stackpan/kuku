@@ -79,13 +79,15 @@ export default class ParticipantRepository {
     return counts;
   }
 
-  async delete(giveawayMessageId: string, userId: string): Promise<void> {
+  async delete(giveawayMessageId: string, userId: string): Promise<boolean> {
     const query = `
       DELETE FROM participants
       WHERE giveaway_message_id = $1 AND user_id = $2
     `;
 
-    await this.database.pool.query(query, [giveawayMessageId, userId]);
+    const result = await this.database.pool.query(query, [giveawayMessageId, userId]);
+
+    return (result.rowCount ?? 0) > 0;
   }
 
   async getAllByUserIdAndGuild(userId: string, guildId: string): Promise<Participant[]> {

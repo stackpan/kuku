@@ -135,30 +135,38 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
   const weightedRolesConfigs = await guildGiveawayWeightedRoleRepository.getAll(guildId, weightedRolesConfigId);
 
-  const embed = createGiveawayEmbed({
-    ...giveawayDto,
-    roles: weightedRolesConfigs,
-    hostedBy: interaction.user.username,
-  });
-
-  const row = new ActionRowBuilder<ButtonBuilder>()
-    .addComponents(
-      new ButtonBuilder()
-        .setCustomId('joinGiveaway')
-        .setLabel('Join Giveaway')
-        .setStyle(ButtonStyle.Primary)
-        .setEmoji('🎉'),
-      new ButtonBuilder()
-        .setCustomId('checkGiveawayProbability')
-        .setLabel('Probability')
-        .setStyle(ButtonStyle.Secondary)
-        .setEmoji('📊')
-    );
-
   const message = await modalSubmit.editReply({
     content: '# 🎉 Giveaway Started!',
-    embeds: [embed],
-    components: [row],
+    embeds: [
+      createGiveawayEmbed({
+        ...giveawayDto,
+        roles: weightedRolesConfigs,
+        hostedBy: interaction.user.username,
+      })
+    ],
+    components: [
+      new ActionRowBuilder<ButtonBuilder>()
+        .addComponents(
+          new ButtonBuilder()
+            .setCustomId('joinGiveaway')
+            .setLabel('Join Giveaway')
+            .setStyle(ButtonStyle.Primary)
+            .setEmoji('🎉'),
+          new ButtonBuilder()
+            .setCustomId('checkGiveawayProbability')
+            .setLabel('Probability')
+            .setStyle(ButtonStyle.Secondary)
+            .setEmoji('📊')
+        ),
+      new ActionRowBuilder<ButtonBuilder>()
+        .addComponents(
+          new ButtonBuilder()
+            .setCustomId('leaveGiveaway')
+            .setLabel('Leave Giveaway')
+            .setStyle(ButtonStyle.Danger)
+            .setEmoji('🏃')
+        ),
+    ],
   });
 
   const giveaway = await giveawayRepository.save({

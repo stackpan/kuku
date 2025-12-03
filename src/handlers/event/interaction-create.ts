@@ -2,6 +2,7 @@ import { Interaction } from "discord.js";
 import { commands } from "../../command-registry";
 import handleJoinGiveaway from "../button/join-giveaway";
 import handleCheckProbability from "../button/check-probability";
+import handleLeaveGiveaway from "../button/leave-giveaway";
 
 export default async function handleInteractionCreate(interaction: Interaction) {
   if (interaction.isChatInputCommand()) {
@@ -32,6 +33,9 @@ export default async function handleInteractionCreate(interaction: Interaction) 
           break;
         case 'checkGiveawayProbability':
           await handleCheckProbability(interaction);
+          break;
+        case 'leaveGiveaway':
+          await handleLeaveGiveaway(interaction);
           break;
         default:
           return;
