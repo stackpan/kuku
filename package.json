@@ -9,7 +9,8 @@
     "build": "tsc",
     "start": "node --env-file=.env dist/index.js",
     "dev": "node -r ts-node/register --env-file=.env src/index.ts",
-    "deploy": "ts-node src/deploy-commands.ts"
+    "deploy": "node -r ts-node/register --env-file=.env src/deploy-commands.ts",
+    "migrate": "node -r ts-node/register --env-file=.env src/migrate.ts"
   },
   "dependencies": {
     "discord.js": "^14.25.1",

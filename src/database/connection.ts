@@ -17,7 +17,7 @@ export default class Connection {
   }
 
   async initialize(): Promise<void> {
-    const schemaPath = path.join(__dirname, 'schema.sql');
+    const schemaPath = path.join(__dirname, '../../schema.sql');
     const schema = await fs.readFile(schemaPath, 'utf-8');
     await this.pool.query(schema);
   }
