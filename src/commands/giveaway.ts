@@ -8,7 +8,7 @@ import {
   InteractionContextType,
 } from 'discord.js';
 import createGiveawayEmbed from '../components/embeds/create-giveaway';
-import { giveawayRepository, guildGiveawayWeightedRoleRepository } from '../singletons';
+import { connection, giveawayRepository, guildGiveawayWeightedRoleRepository } from '../singletons';
 
 export const data = new SlashCommandBuilder()
   .setContexts(InteractionContextType.Guild)
@@ -20,6 +20,7 @@ export const data = new SlashCommandBuilder()
   .addStringOption((option) => option.setName('ends_at').setDescription('The giveaway end time (YYYY-MM-DD HH:mm)').setRequired(true));
 
 export async function execute(interaction: ChatInputCommandInteraction) {
+  await connection.beginTransaction();
   await interaction.deferReply();
 
   const giveawayDto = {
@@ -65,4 +66,5 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   });
 
   console.log(`Giveaway started: ${giveaway.name}`);
+  await connection.commitTransaction();
 }
