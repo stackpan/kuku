@@ -155,8 +155,13 @@ export async function execute(interaction: ChatInputCommandInteraction) {
           new ButtonBuilder()
             .setCustomId('checkGiveawayProbability')
             .setLabel('Probability')
+            .setStyle(ButtonStyle.Success)
+            .setEmoji('📊'),
+          new ButtonBuilder()
+            .setCustomId('listGiveawayParticipants')
+            .setLabel('Participants')
             .setStyle(ButtonStyle.Secondary)
-            .setEmoji('📊')
+            .setEmoji('👥'),
         ),
       new ActionRowBuilder<ButtonBuilder>()
         .addComponents(

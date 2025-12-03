@@ -3,6 +3,7 @@ import { commands } from "../../command-registry";
 import handleJoinGiveaway from "../button/join-giveaway";
 import handleCheckProbability from "../button/check-probability";
 import handleLeaveGiveaway from "../button/leave-giveaway";
+import handleListGiveawayParticipants from "../button/list-giveaway-participants";
 
 export default async function handleInteractionCreate(interaction: Interaction) {
   if (interaction.isChatInputCommand()) {
@@ -38,7 +39,10 @@ export default async function handleInteractionCreate(interaction: Interaction) 
           await handleLeaveGiveaway(interaction);
           break;
         default:
-          return;
+          if (interaction.customId.startsWith('listGiveawayParticipants')) {
+            await handleListGiveawayParticipants(interaction);
+          }
+          break;
       }
     } catch (error) {
       console.error('Error handling button:', error);

@@ -189,4 +189,34 @@ export default class ParticipantRepository {
     const result = await this.database.pool.query(query, [userId, guildId]);
     return (result.rowCount ?? 0) > 0;
   }
+
+  async count(giveawayMessageId: string): Promise<number> {
+    const query = `
+      SELECT COUNT(*) as count
+      FROM participants
+      WHERE giveaway_message_id = $1
+      `;
+
+    const result = await this.database.pool.query(query, [giveawayMessageId]);
+    return parseInt(result.rows[0].count);
+  }
+
+  async getWithPagination(giveawayMessageId: string, page: number, limit: number): Promise<Participant[]> {
+    const offset = (page - 1) * limit;
+    const query = `
+    SELECT * FROM participants
+      WHERE giveaway_message_id = $1
+      ORDER BY created_at ASC
+      LIMIT $2 OFFSET $3
+      `;
+
+    const result = await this.database.pool.query(query, [giveawayMessageId, limit, offset]);
+
+    return result.rows.map(row => ({
+      giveawayMessageId: row.giveaway_message_id,
+      userId: row.user_id,
+      roleId: row.role_id,
+      createdAt: new Date(row.created_at),
+    }));
+  }
 }
