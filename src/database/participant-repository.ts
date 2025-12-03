@@ -131,6 +131,7 @@ export default class ParticipantRepository {
           guildId: row.guild_id,
           channelId: row.channel_id,
           endsAt: row.ends_at,
+          hostedBy: row.hosted_by,
           winnerCount: row.winner_count,
           activeWeightedRolesConfigId: row.active_weighted_roles_config_id,
           createdAt: new Date(row.g_created_at),

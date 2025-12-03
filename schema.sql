@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS giveaways (
     channel_id VARCHAR(20) NOT NULL,
     ends_at TIMESTAMP NOT NULL,
     winner_count SMALLINT NOT NULL,
+    hosted_by VARCHAR(20) NOT NULL,
     active_weighted_roles_config_id SMALLINT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

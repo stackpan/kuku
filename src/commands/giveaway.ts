@@ -39,6 +39,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   const embed = createGiveawayEmbed({
     ...giveawayDto,
     roles: weightedRolesConfigs,
+    hostedBy: interaction.user.username,
   });
 
   const row = new ActionRowBuilder<ButtonBuilder>()
@@ -67,6 +68,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     guildId: interaction.guildId!,
     channelId: interaction.channelId!,
     activeWeightedRolesConfigId: weightedRolesConfigId,
+    hostedBy: interaction.user.username,
   });
 
   giveawayScheduler.schedule(giveaway);

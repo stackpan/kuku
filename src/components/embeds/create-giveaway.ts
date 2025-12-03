@@ -4,12 +4,13 @@ import { GuildGiveawayWeightedRole } from "../../types";
 interface CreateGiveawayEmbedParams {
   name: string;
   description: string;
+  hostedBy: string;
   endsAt: Date;
   winnerCount: number;
   roles: GuildGiveawayWeightedRole[];
 }
 
-export default function createGiveawayEmbed({ name, description, endsAt, winnerCount, roles }: CreateGiveawayEmbedParams): EmbedBuilder {
+export default function createGiveawayEmbed({ name, description, hostedBy, endsAt, winnerCount, roles }: CreateGiveawayEmbedParams): EmbedBuilder {
   return new EmbedBuilder()
     .setColor('#FFD700')
     .setTitle(name)
@@ -17,7 +18,7 @@ export default function createGiveawayEmbed({ name, description, endsAt, winnerC
     .addFields(
       {
         name: '👑 Hosted By',
-        value: 'Moderators', // TODO: Add host
+        value: hostedBy,
         inline: true,
       },
       {
