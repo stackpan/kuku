@@ -12,9 +12,24 @@ interface CreateGiveawayEmbedParams {
 export default function createGiveawayEmbed({ name, description, endsAt, winnerCount, roles }: CreateGiveawayEmbedParams): EmbedBuilder {
   return new EmbedBuilder()
     .setColor('#FFD700')
-    .setTitle(`🎉 ${name}`)
+    .setTitle(name)
     .setDescription(description)
     .addFields(
+      {
+        name: '👑 Hosted By',
+        value: 'Moderators', // TODO: Add host
+        inline: true,
+      },
+      {
+        name: '🏆 Winner Count',
+        value: `${winnerCount}`,
+        inline: true,
+      },
+      {
+        name: '⏰ Ends At',
+        value: `<t:${Math.floor(new Date(endsAt).getTime() / 1000)}:F>`,
+        inline: false,
+      },
       {
         name: '✅ Required Roles',
         value: roles
@@ -22,16 +37,6 @@ export default function createGiveawayEmbed({ name, description, endsAt, winnerC
           .join('\n'),
         inline: false,
       },
-      {
-        name: '🏆 Winners',
-        value: `${winnerCount}`,
-        inline: false,
-      },
-      {
-        name: '⏰ Ends At',
-        value: `<t:${Math.floor(new Date(endsAt).getTime() / 1000)}:F>`,
-        inline: false,
-      }
     )
     .setFooter({
       text: 'Press "Join Giveaway" buttons to participate!'

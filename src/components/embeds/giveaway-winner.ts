@@ -1,18 +1,30 @@
-import { EmbedBuilder } from "discord.js";
+import { ColorResolvable, EmbedBuilder } from "discord.js";
 
 interface CreateWinnerEmbedParams {
-  winnerIds: string[];
-  giveawayName: string;
+  number: number;
+  winnerId: string;
+  winnerUsername: string;
+  winnerRoleId: string;
+  winnerGuildAvatarUrl: string | null;
+  color: ColorResolvable;
 }
 
-export default function createWinnerEmbed({ winnerIds, giveawayName }: CreateWinnerEmbedParams): EmbedBuilder {
-  const winnersList = winnerIds.map(id => `<@${id}>`).join(', ');
-
+export default function createWinnerEmbed({ number, winnerId, winnerUsername, winnerRoleId, winnerGuildAvatarUrl, color }: CreateWinnerEmbedParams): EmbedBuilder {
   return new EmbedBuilder()
-    .setColor('#00FF00')
-    .setTitle('🎊 Giveaway Winner!')
-    .setDescription(
-      `**${giveawayName}**\n\n` +
-      `Congratulations to ${winnersList}! 🎉`
-    );
+    .setColor(color)
+    .setTitle(`#${number} Giveaway Winner!`)
+    .setDescription(`<@${winnerId}>`)
+    .setThumbnail(winnerGuildAvatarUrl)
+    .setFields([
+      {
+        name: 'Username',
+        value: winnerUsername,
+        inline: false
+      },
+      {
+        name: 'Role',
+        value: `<@&${winnerRoleId}>`,
+        inline: false
+      }
+    ]);
 }

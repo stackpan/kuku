@@ -13,7 +13,7 @@ export default function createProbabilityEmbed({ probability, roleId, roleWeight
     .setTitle('📊 Your Winning Probability')
     .setDescription(
       `
-      **Probability: ${(probability * 100).toFixed(2)}%**
+      **Win probability at #1 position:** \`${(probability * 100).toFixed(2)}%\`
 
       Role: <@&${roleId}>
       Weight (chance): ${roleWeight}×

@@ -56,6 +56,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     );
 
   const message = await interaction.editReply({
+    content: '# 🎉 Giveaway Started!',
     embeds: [embed],
     components: [row],
   });
@@ -70,6 +71,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
   giveawayScheduler.schedule(giveaway);
 
-  console.log(`Giveaway started: ${giveaway.name}`);
+  console.log(`Giveaway ${giveaway.messageId} started.`);
   await connection.commitTransaction();
 }

@@ -24,7 +24,7 @@ export class GiveawayScheduler {
     if (delay <= 0) {
       this.endGiveaway(giveaway);
     } else {
-      console.log(`Scheduling giveaway ${giveaway.name} to end in ${delay / 1000} seconds`);
+      console.log(`Scheduling giveaway ${giveaway.messageId} to end in ${delay / 1000} seconds`);
       setTimeout(() => this.endGiveaway(giveaway), delay);
     }
   }
@@ -63,14 +63,6 @@ export class GiveawayScheduler {
               winnerIds.add(winner.userId);
             }
           } else {
-            // We need to pick unique winners from the pool
-            // Since the pool contains duplicates for weights, we need to be careful
-            // Simple approach: pick random index, add to winners, if already winner, pick again
-            // But if pool is large, this might be slow? Not really for discord bot scale usually.
-            // Better: Filter pool after picking? No, that changes probabilities.
-            // Actually, standard weighted random selection without replacement.
-
-            // Clone pool to avoid modifying original if needed (not needed here)
             const currentPool = [...pool];
 
             while (winnerIds.size < winnerCount && currentPool.length > 0) {
@@ -81,16 +73,6 @@ export class GiveawayScheduler {
                 winnerIds.add(winnerId);
               }
 
-              // Remove all instances of this user from pool to simulate "without replacement"
-              // This is important because if we just ignore duplicates in `winnerIds` set but keep them in pool,
-              // the user still has "tickets" in the pool, increasing chance of "wasted" picks,
-              // but more importantly, does it affect probability for others?
-              // Yes, if I have 100 tickets and you have 1, and I win one slot, my remaining 99 tickets shouldn't compete for the second slot if I can't win twice.
-              // So we must remove all my tickets.
-
-              // Optimization: filter in place or create new array
-              // For performance, maybe just filtering is fine.
-              // If pool is huge, this is heavy. But let's assume reasonable size.
               for (let i = currentPool.length - 1; i >= 0; i--) {
                 if (currentPool[i] === winnerId) {
                   currentPool.splice(i, 1);
@@ -109,18 +91,26 @@ export class GiveawayScheduler {
           }
         }
 
-        const embed = createWinnerEmbed({
-          winnerIds: Array.from(winnerIds),
-          giveawayName: giveaway.name,
-        });
+        const winners = await Promise.all(Array.from(winnerIds).map(winnerId => channel.guild.members.fetch(winnerId)));
 
         await channel.send({
-          embeds: [embed]
+          content: `# 🎊 Giveaway Ended!\n**Giveaway:** ${giveaway.name}\n\nCongratulations! Here are the winners: 🎉\n${Array.from(winnerIds).map((winnerId, index) => `${index + 1}. <@${winnerId}>`).join('\n')}`,
+          reply: {
+            messageReference: giveaway.messageId,
+          },
+          embeds: winners.map((winner, index) => createWinnerEmbed({
+            color: winner.displayHexColor,
+            number: index + 1,
+            winnerId: winner.id,
+            winnerUsername: winner.user.username,
+            winnerGuildAvatarUrl: winner.user.avatarURL(),
+            winnerRoleId: participants.find(p => p.userId === winner.id)?.roleId || '',
+          }))
         });
       }
 
       await giveawayRepository.delete(giveaway.messageId);
-      console.log(`Giveaway ${giveaway.name} ended and deleted.`);
+      console.log(`Giveaway ${giveaway.messageId} ended and deleted.`);
 
     } catch (error) {
       console.error(`Failed to end giveaway ${giveaway.messageId}:`, error);
