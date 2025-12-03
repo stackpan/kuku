@@ -14,17 +14,27 @@ const rest = new REST().setToken(env.BOT_TOKEN!);
   try {
     console.log('🔄 Registering slash commands...');
 
-    for (const folder of commandFolders) {
-      const commandPath = path.join(folderPath, folder);
-      const commandFiles = fs.readdirSync(commandPath).filter(file => file.endsWith('.ts') || file.endsWith('.js'));
+    for (const entry of commandFolders) {
+      const entryPath = path.join(folderPath, entry);
+      const stat = fs.statSync(entryPath);
 
-      for (const file of commandFiles) {
-        const filePath = path.join(commandPath, file);
-        const command = await import(filePath);
+      if (stat.isDirectory()) {
+        const commandFiles = fs.readdirSync(entryPath).filter(file => file.endsWith('.ts') || file.endsWith('.js'));
+        for (const file of commandFiles) {
+          const filePath = path.join(entryPath, file);
+          const command = require(filePath);
+          if ('data' in command && 'execute' in command) {
+            commands.push(command.data.toJSON());
+          } else {
+            console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
+          }
+        }
+      } else if (stat.isFile() && (entry.endsWith('.ts') || entry.endsWith('.js'))) {
+        const command = require(entryPath);
         if ('data' in command && 'execute' in command) {
           commands.push(command.data.toJSON());
         } else {
-          console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
+          console.log(`[WARNING] The command at ${entryPath} is missing a required "data" or "execute" property.`);
         }
       }
     }
@@ -33,7 +43,7 @@ const rest = new REST().setToken(env.BOT_TOKEN!);
       Routes.applicationGuildCommands(env.CLIENT_ID!, env.GUILD_ID!),
       { body: commands }
     );
-    
+
     console.log('✅ Slash commands registered');
   } catch (error) {
     console.error('❌ Error registering commands:', error);

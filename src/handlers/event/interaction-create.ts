@@ -1,5 +1,5 @@
 import { Interaction } from "discord.js";
-import { commands } from "../../singletons";
+import { commands } from "../../commands/registry";
 import handleJoinGiveaway from "../button/join-giveaway";
 import handleCheckProbability from "../button/check-probability";
 
@@ -17,7 +17,7 @@ export default async function handleInteractionCreate(interaction: Interaction) 
           content: '❌ An error occurred while executing the command!',
           flags: 'Ephemeral',
         });
-      } 
+      }
       break;
     }
     case interaction.isButton(): {
