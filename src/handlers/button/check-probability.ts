@@ -19,7 +19,7 @@ export default async function handleCheckProbability(interaction: ButtonInteract
 
   const now = new Date();
 
-  if (!giveaway || giveaway.endsAt > now) {
+  if (!giveaway || giveaway.endsAt < now) {
     await interaction.reply({
       content: '❌ This giveaway has ended!',
       flags: 'Ephemeral',
