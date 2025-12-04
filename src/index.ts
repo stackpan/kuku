@@ -13,8 +13,11 @@ client.on(Events.GuildMemberUpdate, handleGuildMemberUpdate);
 client.on(Events.GuildMemberRemove, handleGuildMemberRemove);
 
 createServer((req, res) => {
-  if (req.url === '/kaithhealthcheck' && req.method === 'GET') {
-    res.writeHead(200);
+  if (req.url === '/kaithhealth' && req.method === 'GET') {
+    res.writeHead(204);
+    res.end();
+  } else if (req.url === '/kaithhealthcheck' && req.method === 'GET') {
+    res.writeHead(204);
     res.end();
   } else {
     res.writeHead(404);
