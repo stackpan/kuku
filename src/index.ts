@@ -15,15 +15,9 @@ client.on(Events.GuildMemberRemove, handleGuildMemberRemove);
 client.login(env.BOT_TOKEN);
 
 const server = createServer((req, res) => {
-  if (req.url === '/kaithhealth' && req.method === 'GET') {
-    res.writeHead(200, { 'content-type': 'application/json' });
+  if (req.url === '/health' && req.method === 'GET') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ status: 'ok' }));
-  } else if (req.url === '/kaithhealthcheck' && req.method === 'GET') {
-    res.writeHead(200, { 'content-type': 'application/json' });
-    res.end(JSON.stringify({ status: 'ok' }));
-  } else {
-    res.writeHead(404);
-    res.end();
   }
 });
 
