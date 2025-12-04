@@ -12,7 +12,9 @@ client.on(Events.InteractionCreate, handleInteractionCreate);
 client.on(Events.GuildMemberUpdate, handleGuildMemberUpdate);
 client.on(Events.GuildMemberRemove, handleGuildMemberRemove);
 
-createServer((req, res) => {
+client.login(env.BOT_TOKEN);
+
+const server = createServer((req, res) => {
   if (req.url === '/kaithhealth' && req.method === 'GET') {
     res.writeHead(204);
     res.end();
@@ -23,9 +25,11 @@ createServer((req, res) => {
     res.writeHead(404);
     res.end();
   }
-}).listen(env.PORT);
+});
 
-client.login(env.BOT_TOKEN);
+server.listen(env.PORT, () => {
+  console.log(`✅ Server started on port ${env.PORT}`);
+});
 
 process.on('SIGINT', async () => {
   console.log('\n👋 Shutting down...');
