@@ -2,7 +2,7 @@ import { EmbedBuilder } from "discord.js";
 
 interface CreateCheckProbabilityEmbedParams {
   probability: number;
-  roleId: string;
+  roleId: string | null;
   weight: number;
   totalParticipants: number;
   totalWeights: number;
@@ -15,7 +15,7 @@ export default function createCheckProbabilityEmbed({ probability, roleId, weigh
     .setDescription(`
     1️⃣ **Your winning probability in position #1:** \`${(probability * 100).toFixed(2)}%\`
 
-    Your Role: <@&${roleId}>
+    Your Role: ${roleId ? `<@&${roleId}>` : 'Regular Member'}
     Your Weight: ${weight}
     Total Weights: ${totalWeights}
     Total Participants: ${totalParticipants}

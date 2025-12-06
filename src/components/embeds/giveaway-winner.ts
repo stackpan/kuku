@@ -4,7 +4,7 @@ interface CreateWinnerEmbedParams {
   number: number;
   winnerId: string;
   winnerUsername: string;
-  winnerRoleId: string;
+  winnerRoleId: string | null;
   winnerGuildAvatarUrl: string | null;
   color: ColorResolvable;
 }
@@ -23,7 +23,7 @@ export default function createWinnerEmbed({ number, winnerId, winnerUsername, wi
       },
       {
         name: 'Role',
-        value: `<@&${winnerRoleId}>`,
+        value: winnerRoleId ? `<@&${winnerRoleId}>` : 'Regular Member',
         inline: false
       }
     ]);

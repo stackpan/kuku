@@ -22,7 +22,7 @@ export interface GuildGiveawayWeightedRole {
 export interface Participant {
   giveawayMessageId: string;
   userId: string;
-  roleId: string;
+  roleId: string | null;
   createdAt: Date;
 }
 

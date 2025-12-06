@@ -73,7 +73,7 @@ export default class ParticipantRepository {
     const counts: Record<string, number> = {};
 
     result.rows.forEach(row => {
-      counts[row.role_id] = parseInt(row.count);
+      counts[row.role_id || 'no-role'] = parseInt(row.count);
     });
 
     return counts;
@@ -168,7 +168,7 @@ export default class ParticipantRepository {
     return Array.from(map.values());
   }
 
-  async update(giveawayMessageId: string, userId: string, roleId: string): Promise<void> {
+  async update(giveawayMessageId: string, userId: string, roleId: string | null): Promise<void> {
     const query = `
       UPDATE participants
       SET role_id = $3

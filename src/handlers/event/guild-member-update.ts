@@ -11,7 +11,7 @@ export default async function handleGuildMemberUpdate(oldMember: GuildMember | P
 
   if (participants.length === 0) {
     await connection.rollbackTransaction();
-    return; 
+    return;
   }
 
   for (const participant of participants) {
@@ -31,8 +31,10 @@ export default async function handleGuildMemberUpdate(oldMember: GuildMember | P
         })
         .first();
 
-      if (highestWeightRole && highestWeightRole.id !== participant.roleId) {
-        await participantRepository.update(participant.giveawayMessageId, userId, highestWeightRole.id);
+      const newRoleId = highestWeightRole ? highestWeightRole.id : null;
+
+      if (newRoleId !== participant.roleId) {
+        await participantRepository.update(participant.giveawayMessageId, userId, newRoleId);
       }
     }
   }

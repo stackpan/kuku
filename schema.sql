@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS guild_giveaway_weighted_roles (
 CREATE TABLE IF NOT EXISTS participants (
     giveaway_message_id VARCHAR(20) REFERENCES giveaways(message_id) ON DELETE CASCADE,
     user_id VARCHAR(20) NOT NULL,
-    role_id VARCHAR(20) NOT NULL,
+    role_id VARCHAR(20),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (giveaway_message_id, user_id)
 );

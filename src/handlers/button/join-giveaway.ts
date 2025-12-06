@@ -6,7 +6,7 @@ import { WeightedRolesGiveaway } from '../../types';
 
 export default async function handleJoinGiveaway(interaction: ButtonInteraction) {
   await connection.beginTransaction();
-  
+
   const member = interaction.member as GuildMember;
   const giveaway = await giveawayRepository.get(interaction.message.id) as WeightedRolesGiveaway;
 
@@ -19,21 +19,8 @@ export default async function handleJoinGiveaway(interaction: ButtonInteraction)
     return;
   }
 
-  const hasAllowedRole = member.roles.cache.some(role => 
-    giveaway.weightedRoles.some(wr => wr.roleId === role.id)
-  );
-
-  if (!hasAllowedRole) {
-    await interaction.reply({
-      content: '❌ You do not have the required roles to join this giveaway.',
-      flags: 'Ephemeral',
-    });
-    await connection.rollbackTransaction();
-    return;
-  }
-
   const participant = await participantRepository.get(interaction.message.id, interaction.user.id);
-  
+
   if (participant) {
     await interaction.reply({
       content: '✅ You are already registered in the giveaway!',
@@ -48,7 +35,7 @@ export default async function handleJoinGiveaway(interaction: ButtonInteraction)
     .sort((a, b) => (giveaway.weightedRoles.find(wr => wr.roleId === b.id)?.weight || 0) - (giveaway.weightedRoles.find(wr => wr.roleId === a.id)?.weight || 0))
     .first();
 
-  const roleId = highestWeightRole?.id || giveaway.weightedRoles[0].roleId;
+  const roleId = highestWeightRole?.id || null;
 
   const now = new Date();
 
@@ -66,7 +53,7 @@ export default async function handleJoinGiveaway(interaction: ButtonInteraction)
     userId: interaction.user.id,
     roleId: roleId,
   });
-  
+
   const participantRoles = await participantRepository.getCountsGroupByRole(giveaway.messageId);
   const { probability, weight, totalWeight } = calculateProbability(roleId, giveaway.weightedRoles, participantRoles);
 
