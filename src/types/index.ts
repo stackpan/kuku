@@ -20,10 +20,17 @@ export interface GuildGiveawayWeightedRole {
 }
 
 export interface Participant {
+  id: string;
   giveawayMessageId: string;
   userId: string;
   roleId: string | null;
   createdAt: Date;
+}
+
+export interface ParticipantRequest {
+  participantId: string;
+  winAtPosition: number;
+  content: string;
 }
 
 export interface WeightedRolesGiveaway extends Giveaway {

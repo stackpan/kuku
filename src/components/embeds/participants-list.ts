@@ -5,7 +5,7 @@ interface ParticipantsListEmbedParams {
   number: number;
   page: number;
   maxPages: number;
-  participants: Participant[];
+  participants: Pick<Participant, 'id' | 'userId'>[];
   totalParticipants: number;
 }
 

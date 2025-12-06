@@ -1,5 +1,6 @@
 import Connection from "./connection";
 import { Giveaway, Participant, WeightedRolesGiveaway } from "../types";
+import { randomUUID } from "crypto";
 
 export default class ParticipantRepository {
   private database: Connection;
@@ -10,16 +11,17 @@ export default class ParticipantRepository {
 
   async save(dto: Pick<Participant, 'giveawayMessageId' | 'userId' | 'roleId'>): Promise<Participant> {
     const query = `
-      INSERT INTO participants (giveaway_message_id, user_id, role_id)
-      VALUES ($1, $2, $3)
+      INSERT INTO participants (id, giveaway_message_id, user_id, role_id)
+      VALUES ($1, $2, $3, $4)
       RETURNING *
     `;
 
     const result = await this.database.pool.query(query, [
-      dto.giveawayMessageId, dto.userId, dto.roleId
+      randomUUID(), dto.giveawayMessageId, dto.userId, dto.roleId
     ]);
 
     return {
+      id: result.rows[0].id,
       giveawayMessageId: result.rows[0].giveaway_message_id,
       roleId: result.rows[0].role_id,
       userId: result.rows[0].user_id,
@@ -36,6 +38,7 @@ export default class ParticipantRepository {
     const result = await this.database.pool.query(query, [giveawayMessageId]);
 
     return result.rows.map(row => ({
+      id: row.id,
       giveawayMessageId: row.giveaway_message_id,
       userId: row.user_id,
       roleId: row.role_id,
@@ -54,6 +57,7 @@ export default class ParticipantRepository {
     if (result.rows.length === 0) return null;
 
     return {
+      id: result.rows[0].id,
       giveawayMessageId: result.rows[0].giveaway_message_id,
       userId: result.rows[0].user_id,
       roleId: result.rows[0].role_id,
@@ -99,6 +103,7 @@ export default class ParticipantRepository {
     `;
     const result = await this.database.pool.query(query, [userId, guildId]);
     return result.rows.map(row => ({
+      id: row.id,
       giveawayMessageId: row.giveaway_message_id,
       userId: row.user_id,
       roleId: row.role_id,
@@ -140,6 +145,7 @@ export default class ParticipantRepository {
         };
 
         const participant: Participant = {
+          id: row.id,
           giveawayMessageId: row.giveaway_message_id,
           userId: row.user_id,
           roleId: row.role_id,
@@ -201,10 +207,10 @@ export default class ParticipantRepository {
     return parseInt(result.rows[0].count);
   }
 
-  async getWithPagination(giveawayMessageId: string, page: number, limit: number): Promise<Participant[]> {
+  async getWithPagination(giveawayMessageId: string, page: number, limit: number): Promise<Pick<Participant, 'id' | 'userId'>[]> {
     const offset = (page - 1) * limit;
     const query = `
-    SELECT * FROM participants
+      SELECT id, user_id FROM participants
       WHERE giveaway_message_id = $1
       ORDER BY created_at ASC
       LIMIT $2 OFFSET $3
@@ -213,10 +219,8 @@ export default class ParticipantRepository {
     const result = await this.database.pool.query(query, [giveawayMessageId, limit, offset]);
 
     return result.rows.map(row => ({
-      giveawayMessageId: row.giveaway_message_id,
+      id: row.id,
       userId: row.user_id,
-      roleId: row.role_id,
-      createdAt: new Date(row.created_at),
     }));
   }
 }
