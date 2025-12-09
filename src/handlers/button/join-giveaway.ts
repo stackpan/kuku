@@ -36,8 +36,8 @@ export default async function handleJoinGiveaway(interaction: ButtonInteraction)
     });
     return;
   }
-  
-  const hasAllowedRole = member.roles.cache.some(role => 
+
+  const hasAllowedRole = member.roles.cache.some(role =>
     giveaway.weightedRoles.some(wr => wr.roleId === role.id)
   );
 
@@ -52,10 +52,19 @@ export default async function handleJoinGiveaway(interaction: ButtonInteraction)
 
   await interaction.showModal(joinGiveawayModal);
 
-  const modalSubmit = await interaction.awaitModalSubmit({
-    filter: (i) => i.customId === 'joinGiveawayModal',
-    time: 60000,
-  });
+  let modalSubmit;
+  try {
+    modalSubmit = await interaction.awaitModalSubmit({
+      filter: (i) => i.customId === 'joinGiveawayModal',
+      time: 60000,
+    });
+  } catch (error) {
+    await interaction.followUp({
+      content: '❌ You took too long to fill the form!',
+      flags: 'Ephemeral',
+    });
+    return;
+  }
 
   await modalSubmit.deferReply({ flags: 'Ephemeral' });
   await connection.beginTransaction();
