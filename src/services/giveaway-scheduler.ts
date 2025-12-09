@@ -2,6 +2,7 @@ import { Client, TextChannel, ActionRowBuilder } from 'discord.js';
 import { giveawayRepository, participantRepository } from '../singletons';
 import { Giveaway, WeightedRolesGiveaway } from '../types';
 import createWinnerEmbed from '../components/embeds/giveaway-winner';
+import moment from 'moment';
 
 export class GiveawayScheduler {
   private client: Client;
@@ -18,8 +19,11 @@ export class GiveawayScheduler {
   }
 
   schedule(giveaway: Giveaway | WeightedRolesGiveaway) {
-    const now = new Date();
-    const delay = giveaway.endsAt.getTime() - now.getTime();
+    const now = moment();
+    const endsAt = moment(giveaway.endsAt);
+    const delay = endsAt.diff(now);
+
+    console.log(`[Scheduler] Checking ${giveaway.messageId}: Now=${now.format()}, EndsAt=${endsAt.format()}, Delay=${delay}`);
 
     if (delay <= 0) {
       this.endGiveaway(giveaway);

@@ -1,5 +1,6 @@
 import Connection from "./connection";
 import { Giveaway, WeightedRolesGiveaway } from "../types";
+import moment from 'moment';
 
 export default class GiveawayRepository {
   private database: Connection;
@@ -21,7 +22,7 @@ export default class GiveawayRepository {
       dto.description,
       dto.guildId,
       dto.channelId,
-      dto.endsAt,
+      dto.endsAt.toISOString(),
       dto.hostedBy,
       dto.winnerCount,
       dto.activeWeightedRolesConfigId,
@@ -33,7 +34,7 @@ export default class GiveawayRepository {
       description: result.rows[0].description,
       guildId: result.rows[0].guild_id,
       channelId: result.rows[0].channel_id,
-      endsAt: result.rows[0].ends_at,
+      endsAt: moment.utc(moment(result.rows[0].ends_at).format('YYYY-MM-DD HH:mm:ss')).toDate(),
       hostedBy: result.rows[0].hosted_by,
       winnerCount: result.rows[0].winner_count,
       activeWeightedRolesConfigId: result.rows[0].active_weighted_roles_config_id,
@@ -69,7 +70,7 @@ export default class GiveawayRepository {
       description: first.description,
       guildId: first.guild_id,
       channelId: first.channel_id,
-      endsAt: first.ends_at,
+      endsAt: moment.utc(moment(first.ends_at).format('YYYY-MM-DD HH:mm:ss')).toDate(),
       hostedBy: first.hosted_by,
       winnerCount: first.winner_count,
       activeWeightedRolesConfigId: first.active_weighted_roles_config_id,
@@ -118,7 +119,7 @@ export default class GiveawayRepository {
           guildId: row.guild_id,
           channelId: row.channel_id,
           hostedBy: row.hosted_by,
-          endsAt: row.ends_at,
+          endsAt: moment.utc(moment(row.ends_at).format('YYYY-MM-DD HH:mm:ss')).toDate(),
           winnerCount: row.winner_count,
           activeWeightedRolesConfigId: row.active_weighted_roles_config_id,
           createdAt: new Date(row.created_at),
