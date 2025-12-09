@@ -1,6 +1,13 @@
 import Connection from "./connection";
-import { Giveaway, Participant, WeightedRolesGiveaway } from "../types";
+import { Giveaway, Participant, ParticipantRequest, ParticipantWithRequest, WeightedRolesGiveaway } from "../types";
 import { randomUUID } from "crypto";
+
+interface SaveParticipantDto {
+  giveawayMessageId: string;
+  userId: string;
+  roleId: string | null;
+  requests: Pick<ParticipantRequest, 'winAtPosition' | 'content'>[];
+}
 
 export default class ParticipantRepository {
   private database: Connection;
@@ -9,7 +16,7 @@ export default class ParticipantRepository {
     this.database = database;
   }
 
-  async save(dto: Pick<Participant, 'giveawayMessageId' | 'userId' | 'roleId'>): Promise<Participant> {
+  async save(dto: SaveParticipantDto): Promise<Participant> {
     const query = `
       INSERT INTO participants (id, giveaway_message_id, user_id, role_id)
       VALUES ($1, $2, $3, $4)
@@ -20,19 +27,42 @@ export default class ParticipantRepository {
       randomUUID(), dto.giveawayMessageId, dto.userId, dto.roleId
     ]);
 
-    return {
+    if (dto.requests.length > 0) {
+      const participantId = result.rows[0].id;
+      const values: any[] = [];
+      const placeholders: string[] = [];
+
+      dto.requests.forEach((request, index) => {
+        const i = index * 3;
+        placeholders.push(`($${i + 1}, $${i + 2}, $${i + 3})`);
+        values.push(participantId, request.winAtPosition, request.content);
+      });
+
+      const participantRequestQuery = `
+        INSERT INTO participant_requests (participant_id, win_at_position, content)
+        VALUES ${placeholders.join(', ')}
+      `;
+
+      await this.database.pool.query(participantRequestQuery, values);
+    }
+
+    const participant = {
       id: result.rows[0].id,
       giveawayMessageId: result.rows[0].giveaway_message_id,
       roleId: result.rows[0].role_id,
       userId: result.rows[0].user_id,
-      createdAt: result.rows[0].created_at
+      createdAt: result.rows[0].created_at,
     }
+
+    return participant;
   }
 
-  async getAll(giveawayMessageId: string): Promise<Participant[]> {
+  async getAll(giveawayMessageId: string): Promise<ParticipantWithRequest[]> {
     const query = `
-      SELECT * FROM participants
-      WHERE giveaway_message_id = $1
+      SELECT p.*, pr.win_at_position, pr.content
+      FROM participants p
+      JOIN participant_requests pr ON p.id = pr.participant_id
+      WHERE p.giveaway_message_id = $1
     `;
 
     const result = await this.database.pool.query(query, [giveawayMessageId]);
@@ -43,13 +73,20 @@ export default class ParticipantRepository {
       userId: row.user_id,
       roleId: row.role_id,
       createdAt: new Date(row.created_at),
+      requests: result.rows.map(row => ({
+        participantId: row.id,
+        winAtPosition: row.win_at_position,
+        content: row.content,
+      })),
     }));
   }
 
-  async get(giveawayMessageId: string, userId: string): Promise<Participant | null> {
+  async get(giveawayMessageId: string, userId: string): Promise<ParticipantWithRequest | null> {
     const query = `
-      SELECT * FROM participants
-      WHERE giveaway_message_id = $1 AND user_id = $2
+      SELECT p.*, pr.win_at_position, pr.content
+      FROM participants p
+      JOIN participant_requests pr ON p.id = pr.participant_id
+      WHERE p.giveaway_message_id = $1 AND p.user_id = $2
     `;
 
     const result = await this.database.pool.query(query, [giveawayMessageId, userId]);
@@ -62,7 +99,23 @@ export default class ParticipantRepository {
       userId: result.rows[0].user_id,
       roleId: result.rows[0].role_id,
       createdAt: new Date(result.rows[0].created_at),
+      requests: result.rows.map(row => ({
+        participantId: row.id,
+        winAtPosition: row.win_at_position,
+        content: row.content,
+      })),
     };
+  }
+
+  async isExists(giveawayMessageId: string, userId: string): Promise<boolean> {
+    const query = `
+      SELECT 1 FROM participants
+      WHERE giveaway_message_id = $1 AND user_id = $2
+    `;
+
+    const result = await this.database.pool.query(query, [giveawayMessageId, userId]);
+
+    return result.rows.length > 0;
   }
 
   async getCountsGroupByRole(giveawayMessageId: string): Promise<Record<string, number>> {

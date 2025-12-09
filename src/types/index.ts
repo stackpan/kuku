@@ -36,3 +36,7 @@ export interface ParticipantRequest {
 export interface WeightedRolesGiveaway extends Giveaway {
   weightedRoles: GuildGiveawayWeightedRole[];
 }
+
+export interface ParticipantWithRequest extends Participant {
+  requests: ParticipantRequest[];
+}

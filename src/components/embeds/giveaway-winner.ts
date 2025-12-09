@@ -7,9 +7,10 @@ interface CreateWinnerEmbedParams {
   winnerRoleId: string | null;
   winnerGuildAvatarUrl: string | null;
   color: ColorResolvable;
+  winnerRequest: string;
 }
 
-export default function createWinnerEmbed({ number, winnerId, winnerUsername, winnerRoleId, winnerGuildAvatarUrl, color }: CreateWinnerEmbedParams): EmbedBuilder {
+export default function createWinnerEmbed({ number, winnerId, winnerUsername, winnerRoleId, winnerGuildAvatarUrl, color, winnerRequest }: CreateWinnerEmbedParams): EmbedBuilder {
   return new EmbedBuilder()
     .setColor(color)
     .setTitle(`#${number} Giveaway Winner!`)
@@ -24,6 +25,11 @@ export default function createWinnerEmbed({ number, winnerId, winnerUsername, wi
       {
         name: 'Role',
         value: winnerRoleId ? `<@&${winnerRoleId}>` : 'Regular Member',
+        inline: false
+      },
+      {
+        name: 'Wish',
+        value: winnerRequest,
         inline: false
       }
     ]);

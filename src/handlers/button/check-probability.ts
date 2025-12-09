@@ -37,6 +37,7 @@ export default async function handleCheckProbability(interaction: ButtonInteract
     weight,
     totalParticipants: Object.values(participantRoles).reduce((a, b) => a + b, 0),
     totalWeights: totalWeight,
+    requests: participant.requests,
   });
 
   await interaction.reply({

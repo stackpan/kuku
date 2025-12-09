@@ -1,4 +1,5 @@
 import { EmbedBuilder } from "discord.js";
+import { ParticipantRequest } from "../../types";
 
 interface CreateCheckProbabilityEmbedParams {
   probability: number;
@@ -6,9 +7,10 @@ interface CreateCheckProbabilityEmbedParams {
   weight: number;
   totalParticipants: number;
   totalWeights: number;
+  requests: Pick<ParticipantRequest, 'winAtPosition' | 'content'>[];
 }
 
-export default function createCheckProbabilityEmbed({ probability, roleId, weight, totalParticipants, totalWeights }: CreateCheckProbabilityEmbedParams): EmbedBuilder {
+export default function createCheckProbabilityEmbed({ probability, roleId, weight, totalParticipants, totalWeights, requests }: CreateCheckProbabilityEmbedParams): EmbedBuilder {
   return new EmbedBuilder()
     .setColor('#00FFFF')
     .setTitle('📊 Probability Check')
@@ -19,5 +21,12 @@ export default function createCheckProbabilityEmbed({ probability, roleId, weigh
     Your Weight: ${weight}
     Total Weights: ${totalWeights}
     Total Participants: ${totalParticipants}
-    `);
+    `)
+    .addFields([
+      {
+        name: 'Your Wishes',
+        value: requests.map(request => `**#${request.winAtPosition}:** ${request.content}`).join('\n'),
+        inline: false,
+      }
+    ])
 }

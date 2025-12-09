@@ -120,6 +120,7 @@ export class GiveawayScheduler {
             winnerUsername: winner.user.username,
             winnerGuildAvatarUrl: winner.user.avatarURL(),
             winnerRoleId: participants.find(p => p.userId === winner.id)?.roleId || null,
+            winnerRequest: participants.find(p => p.userId === winner.id)?.requests.find(r => r.winAtPosition === index + 1)?.content || '',
           }))
         });
       }

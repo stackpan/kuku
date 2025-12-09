@@ -1,0 +1,61 @@
+import { LabelBuilder, ModalBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
+
+export default new ModalBuilder()
+  .setCustomId('joinGiveawayModal')
+  .setTitle('Join Giveaway')
+  .addLabelComponents(
+    new LabelBuilder()
+      .setLabel('JIKA menang di pos #1, kamu mau ambil apa?')
+      .setDescription('Pilih yang ada di Discord Shop, maks. harga IDR 105k (bukan harga nitro)')
+      .setTextInputComponent(
+        new TextInputBuilder()
+          .setCustomId('winnerRequestInput1')
+          .setStyle(TextInputStyle.Short)
+          .setPlaceholder('Masukkan nama item sesuai yang ada di Discord Shop')
+          .setRequired(true)
+          .setMinLength(1)
+          .setMaxLength(30)
+      )
+  )
+  .addLabelComponents(
+    new LabelBuilder()
+      .setLabel('JIKA menang di pos #2, kamu mau ambil apa?')
+      .setDescription('Pilih yang ada di Discord Shop, maks. harga IDR 100k (bukan harga nitro)')
+      .setTextInputComponent(
+        new TextInputBuilder()
+          .setCustomId('winnerRequestInput2')
+          .setStyle(TextInputStyle.Short)
+          .setPlaceholder('Masukkan nama item sesuai yang ada di Discord Shop')
+          .setRequired(true)
+          .setMinLength(1)
+          .setMaxLength(30)
+      )
+  )
+  .addLabelComponents(
+    new LabelBuilder()
+      .setLabel('JIKA menang di pos #3, kamu mau ambil apa?')
+      .setDescription('Pilih yang ada di Discord Shop, maks. harga IDR 39.5k (bukan harga nitro)')
+      .setTextInputComponent(
+        new TextInputBuilder()
+          .setCustomId('winnerRequestInput3')
+          .setStyle(TextInputStyle.Short)
+          .setPlaceholder('Masukkan nama item sesuai yang ada di Discord Shop')
+          .setRequired(true)
+          .setMinLength(1)
+          .setMaxLength(30)
+      )
+  )
+  .addLabelComponents(
+    new LabelBuilder()
+      .setLabel('JIKA menang di pos #4, kamu mau ambil apa?')
+      .setDescription('Pilih yang ada di Discord Shop, maks. harga IDR 39.5k (bukan harga nitro)')
+      .setTextInputComponent(
+        new TextInputBuilder()
+          .setCustomId('winnerRequestInput4')
+          .setStyle(TextInputStyle.Short)
+          .setPlaceholder('Masukkan nama item sesuai yang ada di Discord Shop')
+          .setRequired(true)
+          .setMinLength(1)
+          .setMaxLength(30)
+      )
+  );

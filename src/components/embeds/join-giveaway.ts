@@ -1,4 +1,5 @@
 import { EmbedBuilder } from "discord.js";
+import { ParticipantRequest } from "../../types";
 
 interface CreateJoinGiveawayEmbedParams {
   probability: number;
@@ -6,9 +7,10 @@ interface CreateJoinGiveawayEmbedParams {
   weight: number;
   totalParticipants: number;
   totalWeights: number;
+  requests: Pick<ParticipantRequest, 'winAtPosition' | 'content'>[];
 }
 
-export default function createJoinGiveawayEmbed({ probability, roleId, weight, totalParticipants, totalWeights }: CreateJoinGiveawayEmbedParams): EmbedBuilder {
+export default function createJoinGiveawayEmbed({ probability, roleId, weight, totalParticipants, totalWeights, requests }: CreateJoinGiveawayEmbedParams): EmbedBuilder {
   return new EmbedBuilder()
     .setColor('#0099FF')
     .setTitle('✅ You have successfully joined the giveaway!')
@@ -19,5 +21,12 @@ export default function createJoinGiveawayEmbed({ probability, roleId, weight, t
     Your Weight: ${weight}
     Total Weights: ${totalWeights}
     Total Participants: ${totalParticipants}
-    `);
+    `)
+    .addFields([
+      {
+        name: 'Your Wishes',
+        value: requests.map(request => `**#${request.winAtPosition}:** ${request.content}`).join('\n'),
+        inline: false,
+      }
+    ])
 }
