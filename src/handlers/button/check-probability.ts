@@ -1,5 +1,5 @@
 import createCheckProbabilityEmbed from '../../components/embeds/check-probability';
-import { ButtonInteraction } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle } from 'discord.js';
 import { calculateProbability } from '../../utils/probability';
 import { connection, giveawayRepository, participantRepository } from '../../singletons';
 import { WeightedRolesGiveaway } from '../../types';
@@ -42,5 +42,15 @@ export default async function handleCheckProbability(interaction: ButtonInteract
   await interaction.reply({
     embeds: [embed],
     flags: 'Ephemeral',
+    components: [
+      new ActionRowBuilder<ButtonBuilder>()
+        .addComponents(
+          new ButtonBuilder()
+            .setCustomId('leaveGiveaway')
+            .setLabel('Leave Giveaway')
+            .setStyle(ButtonStyle.Danger)
+            .setEmoji('🏃')
+        ),
+    ]
   });
 }

@@ -92,14 +92,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setStyle(ButtonStyle.Secondary)
             .setEmoji('👥'),
         ),
-      new ActionRowBuilder<ButtonBuilder>()
-        .addComponents(
-          new ButtonBuilder()
-            .setCustomId('leaveGiveaway')
-            .setLabel('Leave Giveaway')
-            .setStyle(ButtonStyle.Danger)
-            .setEmoji('🏃')
-        ),
     ],
   });
 
