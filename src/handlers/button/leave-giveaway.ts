@@ -5,7 +5,10 @@ import { participantRepository } from "../../singletons";
 export default async function handleLeaveGiveaway(interaction: ButtonInteraction) {
   await connection.beginTransaction();
 
-  const deleted = await participantRepository.delete(interaction.message.id, interaction.user.id);
+  const customIdParts = interaction.customId.split(':');
+  const messageId = customIdParts.length > 1 ? customIdParts[1] : interaction.message.id;
+
+  const deleted = await participantRepository.delete(messageId, interaction.user.id);
 
   if (!deleted) {
     await interaction.reply({

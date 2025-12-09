@@ -35,12 +35,11 @@ export default async function handleInteractionCreate(interaction: Interaction) 
         case 'checkGiveawayProbability':
           await handleCheckProbability(interaction);
           break;
-        case 'leaveGiveaway':
-          await handleLeaveGiveaway(interaction);
-          break;
         default:
           if (interaction.customId.startsWith('listGiveawayParticipants')) {
             await handleListGiveawayParticipants(interaction);
+          } else if (interaction.customId.startsWith('leaveGiveaway')) {
+            await handleLeaveGiveaway(interaction);
           }
           break;
       }
