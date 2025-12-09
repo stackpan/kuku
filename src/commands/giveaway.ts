@@ -3,16 +3,14 @@ import {
   ChatInputCommandInteraction,
   PermissionFlagsBits,
   InteractionContextType,
-  ModalBuilder,
-  LabelBuilder,
-  TextInputBuilder,
-  TextInputStyle,
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
 } from 'discord.js';
 import { connection, giveawayRepository, giveawayScheduler, guildGiveawayWeightedRoleRepository } from '../singletons';
+import moment from 'moment';
 import createGiveawayEmbed from '../components/embeds/create-giveaway';
+import createCreateGiveawayModal from '../components/modals/create-giveaway';
 
 export const data = new SlashCommandBuilder()
   .setContexts(InteractionContextType.Guild)
@@ -21,79 +19,7 @@ export const data = new SlashCommandBuilder()
   .setDefaultMemberPermissions(PermissionFlagsBits.Administrator);
 
 export async function execute(interaction: ChatInputCommandInteraction) {
-  const now = new Date();
-  now.setDate(now.getDate() + 1);
-  const pad = (n: number) => n.toString().padStart(2, '0');
-  const defaultEndsAt = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
-
-  const modal = new ModalBuilder()
-    .setCustomId('createGiveawayModal')
-    .setTitle('Create Giveaway')
-    .addLabelComponents(
-      new LabelBuilder()
-        .setLabel('Name')
-        .setDescription('What you are giving away')
-        .setTextInputComponent(
-          new TextInputBuilder()
-            .setCustomId('giveawayNameInput')
-            .setStyle(TextInputStyle.Short)
-            .setPlaceholder(`${interaction.guild?.name}'s Prize`)
-            .setRequired(true)
-            .setMinLength(1)
-            .setMaxLength(100)
-        ),
-      new LabelBuilder()
-        .setLabel('Description')
-        .setDescription('What is the giveaway about?')
-        .setTextInputComponent(
-          new TextInputBuilder()
-            .setCustomId('giveawayDescriptionInput')
-            .setStyle(TextInputStyle.Paragraph)
-            .setPlaceholder('Lorem ipsum dolor sit amet, consectetur adipiscing elit.')
-            .setRequired(true)
-            .setMinLength(1)
-            .setMaxLength(255)
-        ),
-      new LabelBuilder()
-        .setLabel('Ends At')
-        .setDescription('When does the giveaway end? Format: YYYY-MM-DD hh:mm')
-        .setTextInputComponent(
-          new TextInputBuilder()
-            .setCustomId('giveawayEndsAtInput')
-            .setStyle(TextInputStyle.Short)
-            .setRequired(true)
-            .setPlaceholder(defaultEndsAt)
-            .setValue(defaultEndsAt)
-            .setMinLength(16)
-            .setMaxLength(16)
-        ),
-      new LabelBuilder()
-        .setLabel('Winner Count')
-        .setDescription('How many winners? (1-10)')
-        .setTextInputComponent(
-          new TextInputBuilder()
-            .setCustomId('giveawayWinnerCountInput')
-            .setStyle(TextInputStyle.Short)
-            .setPlaceholder('1')
-            .setValue('1')
-            .setRequired(true)
-            .setMinLength(1)
-            .setMaxLength(2)
-        ),
-      new LabelBuilder()
-        .setLabel('Hosted By')
-        .setDescription('Who hosted the giveaway?')
-        .setTextInputComponent(
-          new TextInputBuilder()
-            .setCustomId('giveawayHostedByInput')
-            .setStyle(TextInputStyle.Short)
-            .setRequired(true)
-            .setPlaceholder('John Doe')
-            .setValue(interaction.user.displayName)
-            .setMinLength(1)
-            .setMaxLength(20)
-        ),
-    );
+  const modal = createCreateGiveawayModal(interaction);
 
   await interaction.showModal(modal);
   const modalSubmit = await interaction.awaitModalSubmit({
@@ -104,21 +30,24 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   await modalSubmit.deferReply();
   await connection.beginTransaction();
 
+  const endsAtInput = modalSubmit.fields.getTextInputValue('giveawayEndsAtInput');
+  const endsAtMoment = moment.utc(endsAtInput, 'YYYY-MM-DD HH:mm', true);
+
   const giveawayDto = {
     name: modalSubmit.fields.getTextInputValue('giveawayNameInput'),
     description: modalSubmit.fields.getTextInputValue('giveawayDescriptionInput'),
-    endsAt: new Date(modalSubmit.fields.getTextInputValue('giveawayEndsAtInput').replace(' ', 'T')),
+    endsAt: endsAtMoment.toDate(),
     winnerCount: parseInt(modalSubmit.fields.getTextInputValue('giveawayWinnerCountInput')),
     hostedBy: modalSubmit.fields.getTextInputValue('giveawayHostedByInput'),
   }
 
-  if (isNaN(giveawayDto.endsAt.getTime())) {
+  if (!endsAtMoment.isValid()) {
     await modalSubmit.editReply({ content: '❌ Invalid date format. Please use YYYY-MM-DD hh:mm.' });
     await connection.rollbackTransaction();
     return;
   }
 
-  if (giveawayDto.endsAt <= new Date()) {
+  if (endsAtMoment.isBefore(moment())) {
     await modalSubmit.editReply({ content: '❌ The giveaway must end in the future.' });
     await connection.rollbackTransaction();
     return;

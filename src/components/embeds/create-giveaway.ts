@@ -1,4 +1,5 @@
 import { EmbedBuilder } from "discord.js";
+import moment from 'moment';
 import { GuildGiveawayWeightedRole } from "../../types";
 
 interface CreateGiveawayEmbedParams {
@@ -28,7 +29,7 @@ export default function createGiveawayEmbed({ name, description, hostedBy, endsA
       },
       {
         name: '⏰ Ends At',
-        value: `<t:${Math.floor(new Date(endsAt).getTime() / 1000)}:F>`,
+        value: `<t:${moment(endsAt).unix()}:F>`,
         inline: false,
       },
       {
