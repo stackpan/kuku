@@ -46,7 +46,7 @@ export default async function handleCheckProbability(interaction: ButtonInteract
       new ActionRowBuilder<ButtonBuilder>()
         .addComponents(
           new ButtonBuilder()
-            .setCustomId('leaveGiveaway')
+            .setCustomId(`leaveGiveaway:${giveaway.messageId}`)
             .setLabel('Leave Giveaway')
             .setStyle(ButtonStyle.Danger)
             .setEmoji('🏃')
