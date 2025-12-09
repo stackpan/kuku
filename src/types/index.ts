@@ -23,7 +23,7 @@ export interface Participant {
   id: string;
   giveawayMessageId: string;
   userId: string;
-  roleId: string | null;
+  roleId: string;
   createdAt: Date;
 }
 

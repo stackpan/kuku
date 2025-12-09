@@ -63,8 +63,7 @@ export class GiveawayScheduler {
         if (giveaway.activeWeightedRolesConfigId && 'weightedRoles' in giveaway && giveaway.weightedRoles.length > 0) {
           const pool: string[] = [];
           for (const p of participants) {
-            const roleConfig = giveaway.weightedRoles.find(r => r.roleId === p.roleId) ||
-              giveaway.weightedRoles.find(r => r.roleId === 'no-role');
+            const roleConfig = giveaway.weightedRoles.find(r => r.roleId === p.roleId);
             const weight = roleConfig ? roleConfig.weightNormalized : 1;
             for (let i = 0; i < weight; i++) {
               pool.push(p.userId);
@@ -119,7 +118,7 @@ export class GiveawayScheduler {
             winnerId: winner.id,
             winnerUsername: winner.user.username,
             winnerGuildAvatarUrl: winner.user.avatarURL(),
-            winnerRoleId: participants.find(p => p.userId === winner.id)?.roleId || null,
+            winnerRoleId: participants.find(p => p.userId === winner.id)?.roleId!,
             winnerRequest: participants.find(p => p.userId === winner.id)?.requests.find(r => r.winAtPosition === index + 1)?.content || '',
           }))
         });

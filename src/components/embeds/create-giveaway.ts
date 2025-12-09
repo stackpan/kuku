@@ -32,9 +32,9 @@ export default function createGiveawayEmbed({ name, description, hostedBy, endsA
         inline: false,
       },
       {
-        name: '✅ Winning Rates',
+        name: '✅ Required Roles',
         value: roles
-          .map(role => `- ${role.roleId !== 'no-role' ? `<@&${role.roleId}>` : 'Regular Member'} (${role.weight}× win chance)`)
+          .map(role => `- <@&${role.roleId}> (${role.weight}× win chance)`)
           .join('\n'),
         inline: false,
       },

@@ -1,18 +1,17 @@
 import { GuildGiveawayWeightedRole, Participant } from '../types';
 
-export function calculateProbability(roleId: string | null, weightedRoles: GuildGiveawayWeightedRole[], participantCountByRole: Record<string, number>): { probability: number; weight: number; totalWeight: number } {
+export function calculateProbability(roleId: string, weightedRoles: GuildGiveawayWeightedRole[], participantCountByRole: Record<string, number>): { probability: number; weight: number; totalWeight: number } {
   const weights = weightedRoles.reduce((acc, wr) => {
     acc[wr.roleId] = wr.weightNormalized;
     return acc;
   }, {} as Record<string, number>);
 
-  const weight = weights[roleId || 'no-role'] || 0;
+  const weight = weights[roleId] || 0;
 
   let totalWeight = 0;
 
   Object.entries(participantCountByRole).forEach(([role, count]) => {
-    const effectiveRole = role === 'null' ? 'no-role' : role;
-    totalWeight += (weights[effectiveRole] || 0) * count;
+    totalWeight += (weights[role] || 0) * count;
   });
 
   return { probability: weight / totalWeight, weight, totalWeight };
@@ -27,14 +26,14 @@ export function selectWinner(weightedRoles: GuildGiveawayWeightedRole[], partici
   }, {} as Record<string, number>);
 
   const totalWeight = participants.reduce((sum, p) => {
-    return sum + (weights[p.roleId || 'no-role'] || 0);
+    return sum + (weights[p.roleId] || 0);
   }, 0);
 
   let random = Math.random() * totalWeight;
   let cumulativeWeight = 0;
 
   for (const participant of participants) {
-    const weight = weights[participant.roleId || 'no-role'] || 0;
+    const weight = weights[participant.roleId] || 0;
     cumulativeWeight += weight;
     if (random <= cumulativeWeight) {
       return participant;

@@ -31,10 +31,8 @@ export default async function handleGuildMemberUpdate(oldMember: GuildMember | P
         })
         .first();
 
-      const newRoleId = highestWeightRole ? highestWeightRole.id : null;
-
-      if (newRoleId !== participant.roleId) {
-        await participantRepository.update(participant.giveawayMessageId, userId, newRoleId);
+      if (highestWeightRole && highestWeightRole.id !== participant.roleId) {
+        await participantRepository.update(participant.giveawayMessageId, userId, highestWeightRole.id);
       }
     }
   }

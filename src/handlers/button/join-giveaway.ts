@@ -6,6 +6,7 @@ import { WeightedRolesGiveaway } from '../../types';
 import joinGiveawayModal from '../../components/modals/join-giveaway';
 
 export default async function handleJoinGiveaway(interaction: ButtonInteraction) {
+  const member = interaction.member as GuildMember;
   const exists = await participantRepository.isExists(interaction.message.id, interaction.user.id);
 
   if (exists) {
@@ -35,6 +36,19 @@ export default async function handleJoinGiveaway(interaction: ButtonInteraction)
     });
     return;
   }
+  
+  const hasAllowedRole = member.roles.cache.some(role => 
+    giveaway.weightedRoles.some(wr => wr.roleId === role.id)
+  );
+
+  if (!hasAllowedRole) {
+    await interaction.reply({
+      content: '❌ You do not have the required roles to join this giveaway.',
+      flags: 'Ephemeral',
+    });
+    await connection.rollbackTransaction();
+    return;
+  }
 
   await interaction.showModal(joinGiveawayModal);
 
@@ -46,14 +60,12 @@ export default async function handleJoinGiveaway(interaction: ButtonInteraction)
   await modalSubmit.deferReply({ flags: 'Ephemeral' });
   await connection.beginTransaction();
 
-  const member = interaction.member as GuildMember;
-
   const highestWeightRole = member.roles.cache
     .filter(role => giveaway.weightedRoles.some(wr => wr.roleId === role.id))
     .sort((a, b) => (giveaway.weightedRoles.find(wr => wr.roleId === b.id)?.weight || 0) - (giveaway.weightedRoles.find(wr => wr.roleId === a.id)?.weight || 0))
     .first();
 
-  const roleId = highestWeightRole?.id || null;
+  const roleId = highestWeightRole?.id!;
 
   const requests = [
     {

@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS participants (
     id UUID PRIMARY KEY NOT NULL,
     giveaway_message_id VARCHAR(20) REFERENCES giveaways(message_id) ON DELETE CASCADE,
     user_id VARCHAR(20) NOT NULL,
-    role_id VARCHAR(20),
+    role_id VARCHAR(20) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE (giveaway_message_id, user_id)
 );
