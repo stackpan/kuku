@@ -4,10 +4,18 @@ import createParticipantsListEmbed from "../../components/embeds/participants-li
 
 export default async function handleListGiveawayParticipants(interaction: ButtonInteraction) {
   const customIdParts = interaction.customId.split(':');
+  const isPagination = customIdParts.length === 3;
+
+  if (isPagination) {
+    await interaction.deferUpdate();
+  } else {
+    await interaction.deferReply({ flags: 'Ephemeral' });
+  }
+
   let giveawayMessageId = interaction.message.id;
   let page = 1;
 
-  if (customIdParts.length === 3) {
+  if (isPagination) {
     // listGiveawayParticipants:<giveawayId>:<page>
     giveawayMessageId = customIdParts[1];
     page = parseInt(customIdParts[2]);
@@ -57,9 +65,5 @@ export default async function handleListGiveawayParticipants(interaction: Button
     components: row.components.length > 0 ? [row] : [],
   };
 
-  if (customIdParts.length === 3) {
-    await interaction.update(responseOptions);
-  } else {
-    await interaction.reply({ ...responseOptions, flags: 'Ephemeral' });
-  }
+  await interaction.editReply(responseOptions);
 }
