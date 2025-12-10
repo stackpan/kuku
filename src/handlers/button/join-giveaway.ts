@@ -1,7 +1,7 @@
 import createJoinGiveawayEmbed from '../../components/embeds/join-giveaway';
 import { ButtonInteraction, GuildMember } from 'discord.js';
 import { calculateProbability } from '../../utils/probability';
-import { connection, giveawayRepository, participantRepository } from '../../singletons';
+import { giveawayRepository, participantRepository } from '../../singletons';
 import { WeightedRolesGiveaway } from '../../types';
 import joinGiveawayModal from '../../components/modals/join-giveaway';
 
@@ -46,7 +46,6 @@ export default async function handleJoinGiveaway(interaction: ButtonInteraction)
       content: '❌ You do not have the required roles to join this giveaway.',
       flags: 'Ephemeral',
     });
-    await connection.rollbackTransaction();
     return;
   }
 
@@ -67,7 +66,6 @@ export default async function handleJoinGiveaway(interaction: ButtonInteraction)
   }
 
   await modalSubmit.deferReply({ flags: 'Ephemeral' });
-  await connection.beginTransaction();
 
   const highestWeightRole = member.roles.cache
     .filter(role => giveaway.weightedRoles.some(wr => wr.roleId === role.id))
@@ -117,6 +115,4 @@ export default async function handleJoinGiveaway(interaction: ButtonInteraction)
   await modalSubmit.editReply({
     embeds: [embed],
   });
-
-  await connection.commitTransaction();
 }
