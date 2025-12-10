@@ -35,6 +35,8 @@ export default function createGiveawayEmbed({ name, description, hostedBy, endsA
       {
         name: '✅ Required Roles',
         value: roles
+          .slice()
+          .sort((a, b) => b.weight - a.weight)
           .map(role => `- <@&${role.roleId}> (${role.weight}× win chance)`)
           .join('\n'),
         inline: false,
