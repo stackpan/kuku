@@ -14,16 +14,20 @@ export default async function handleInteractionCreate(interaction: Interaction) 
       await command.execute(interaction);
     } catch (error) {
       console.error('Error executing command:', error);
-      if (interaction.replied || interaction.deferred) {
-        await interaction.followUp({
-          content: '❌ An error occurred while executing the command!',
-          ephemeral: true,
-        });
-      } else {
-        await interaction.reply({
-          content: '❌ An error occurred while executing the command!',
+      try {
+        if (interaction.replied || interaction.deferred) {
+          await interaction.followUp({
+            content: '❌ An error occurred while executing the command!',
+            ephemeral: true,
+          });
+        } else {
+          await interaction.reply({
+            content: '❌ An error occurred while executing the command!',
           flags: 'Ephemeral',
-        });
+          });
+        }
+      } catch (err) {
+        console.error('Error sending error message:', err);
       }
     }
   } else if (interaction.isButton()) {
@@ -45,16 +49,20 @@ export default async function handleInteractionCreate(interaction: Interaction) 
       }
     } catch (error) {
       console.error('Error handling button:', error);
-      if (interaction.replied || interaction.deferred) {
-        await interaction.followUp({
-          content: '❌ An error occurred while handling the button!',
-          flags: 'Ephemeral',
-        });
-      } else {
-        await interaction.reply({
-          content: '❌ An error occurred while handling the button!',
-          flags: 'Ephemeral',
-        });
+      try {
+        if (interaction.replied || interaction.deferred) {
+          await interaction.followUp({
+            content: '❌ An error occurred while handling the button!',
+            flags: 'Ephemeral',
+          });
+        } else {
+          await interaction.reply({
+            content: '❌ An error occurred while handling the button!',
+            flags: 'Ephemeral',
+          });
+        }
+      } catch (err) {
+        console.error('Error sending error message:', err);
       }
     }
   }

@@ -5,26 +5,24 @@ import { connection, giveawayRepository, participantRepository } from '../../sin
 import { WeightedRolesGiveaway } from '../../types';
 
 export default async function handleCheckProbability(interaction: ButtonInteraction) {
+  await interaction.deferReply({ flags: 'Ephemeral' });
+
   const participant = await participantRepository.get(interaction.message.id, interaction.user.id);
   const giveaway = await giveawayRepository.get(interaction.message.id) as WeightedRolesGiveaway;
 
   if (!participant) {
-    await interaction.reply({
+    await interaction.editReply({
       content: '❌ You are not registered in the giveaway! Click "Join Giveaway" first.',
-      flags: 'Ephemeral',
     });
-    await connection.rollbackTransaction();
     return;
   }
 
   const now = new Date();
 
   if (!giveaway || giveaway.endsAt < now) {
-    await interaction.reply({
+    await interaction.editReply({
       content: '❌ This giveaway has ended!',
-      flags: 'Ephemeral',
     });
-    await connection.rollbackTransaction();
     return;
   }
 
@@ -40,9 +38,8 @@ export default async function handleCheckProbability(interaction: ButtonInteract
     requests: participant.requests,
   });
 
-  await interaction.reply({
+  await interaction.editReply({
     embeds: [embed],
-    flags: 'Ephemeral',
     components: [
       new ActionRowBuilder<ButtonBuilder>()
         .addComponents(

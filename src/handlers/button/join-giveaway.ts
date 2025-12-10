@@ -1,5 +1,5 @@
 import createJoinGiveawayEmbed from '../../components/embeds/join-giveaway';
-import { ButtonInteraction, GuildMember } from 'discord.js';
+import { ButtonInteraction, GuildMember, ModalBuilder } from 'discord.js';
 import { calculateProbability } from '../../utils/probability';
 import { giveawayRepository, participantRepository } from '../../singletons';
 import { WeightedRolesGiveaway } from '../../types';
@@ -49,12 +49,16 @@ export default async function handleJoinGiveaway(interaction: ButtonInteraction)
     return;
   }
 
-  await interaction.showModal(joinGiveawayModal);
+  const modalCustomId = `joinGiveawayModal-${interaction.id}`;
+  const modal = ModalBuilder.from(joinGiveawayModal.toJSON());
+  modal.setCustomId(modalCustomId);
+
+  await interaction.showModal(modal);
 
   let modalSubmit;
   try {
     modalSubmit = await interaction.awaitModalSubmit({
-      filter: (i) => i.customId === 'joinGiveawayModal',
+      filter: (i) => i.customId === modalCustomId,
       time: 60000,
     });
   } catch (error) {
