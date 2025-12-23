@@ -127,10 +127,6 @@ export class GiveawayScheduler {
           }))
         });
       }
-
-      await giveawayRepository.delete(giveaway.messageId);
-      console.log(`Giveaway ${giveaway.messageId} ended and deleted.`);
-
     } catch (error) {
       console.error(`Failed to end giveaway ${giveaway.messageId}:`, error);
     }
