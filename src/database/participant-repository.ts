@@ -61,24 +61,35 @@ export default class ParticipantRepository {
     const query = `
       SELECT p.*, pr.win_at_position, pr.content
       FROM participants p
-      JOIN participant_requests pr ON p.id = pr.participant_id
+      LEFT JOIN participant_requests pr ON p.id = pr.participant_id
       WHERE p.giveaway_message_id = $1
     `;
 
     const result = await this.database.pool.query(query, [giveawayMessageId]);
+    const map = new Map<string, ParticipantWithRequest>();
 
-    return result.rows.map(row => ({
-      id: row.id,
-      giveawayMessageId: row.giveaway_message_id,
-      userId: row.user_id,
-      roleId: row.role_id,
-      createdAt: new Date(row.created_at),
-      requests: result.rows.map(row => ({
-        participantId: row.id,
-        winAtPosition: row.win_at_position,
-        content: row.content,
-      })),
-    }));
+    for (const row of result.rows) {
+      if (!map.has(row.id)) {
+        map.set(row.id, {
+          id: row.id,
+          giveawayMessageId: row.giveaway_message_id,
+          userId: row.user_id,
+          roleId: row.role_id,
+          createdAt: new Date(row.created_at),
+          requests: [],
+        });
+      }
+
+      if (row.win_at_position !== null) {
+        map.get(row.id)!.requests.push({
+          participantId: row.id,
+          winAtPosition: row.win_at_position,
+          content: row.content,
+        });
+      }
+    }
+
+    return Array.from(map.values());
   }
 
   async get(giveawayMessageId: string, userId: string): Promise<ParticipantWithRequest | null> {
