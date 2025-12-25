@@ -8,11 +8,13 @@ import {
   ButtonStyle,
   TextChannel,
 } from 'discord.js';
-import { connection, giveawayRepository, giveawayScheduler, guildGiveawayWeightedRoleRepository } from '../singletons';
+import { connection, giveawayRepository, giveawayScheduler, guildGiveawayWeightedRoleRepository, participantRepository } from '../singletons';
 import moment from 'moment';
 import createGiveawayEmbed from '../components/embeds/create-giveaway';
 import createCreateGiveawayModal from '../components/modals/create-giveaway';
-import { WeightedRolesGiveaway } from '../types';
+import { WeightedRolesGiveaway, ParticipantWithRequest } from '../types';
+import { selectWinner } from '../utils/probability';
+import createWinnerEmbed from '../components/embeds/giveaway-winner';
 
 export const data = new SlashCommandBuilder()
   .setContexts(InteractionContextType.Guild)
@@ -32,6 +34,23 @@ export const data = new SlashCommandBuilder()
         option
           .setName('message_id')
           .setDescription('The message ID of the giveaway to update')
+          .setRequired(true)
+      )
+  )
+  .addSubcommand(subcommand =>
+    subcommand
+      .setName('reroll')
+      .setDescription('Reroll a giveaway winner')
+      .addStringOption(option =>
+        option
+          .setName('message_id')
+          .setDescription('The message ID of the giveaway')
+          .setRequired(true)
+      )
+      .addNumberOption(option =>
+        option
+          .setName('position')
+          .setDescription('The position of the winner to reroll')
           .setRequired(true)
       )
   );
@@ -173,5 +192,87 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       console.error(error);
       await interaction.editReply({ content: `❌ Failed to update giveaway message: ${error instanceof Error ? error.message : 'Unknown error'}` });
     }
+  } else if (subcommand === 'reroll') {
+    const messageId = interaction.options.getString('message_id', true);
+    const position = interaction.options.getNumber('position', true);
+
+    await interaction.deferReply();
+
+    const giveaway = await giveawayRepository.get(messageId);
+    if (!giveaway) {
+      await interaction.editReply({ content: `❌ Giveaway with message ID ${messageId} not found.` });
+      return;
+    }
+
+    // Check if giveaway has ended
+    if (moment().isBefore(moment(giveaway.endsAt))) {
+      await interaction.editReply({ content: `❌ Giveaway has not ended yet.` });
+      return;
+    }
+
+    const currentWinners = await giveawayRepository.getWinners(messageId);
+    if (currentWinners.length === 0) {
+      await interaction.editReply({ content: `❌ No winners found for this giveaway. It might have ended before winners were tracked.` });
+      return;
+    }
+
+    if (position < 1 || position > currentWinners.length) {
+      await interaction.editReply({ content: `❌ Invalid position. There are ${currentWinners.length} winners.` });
+      return;
+    }
+
+    const oldWinnerId = currentWinners[position - 1];
+
+    // Get all participants
+    const participants = await participantRepository.getAll(messageId);
+
+    // Filter out current winners from candidates
+    const currentWinnerSet = new Set(currentWinners);
+    const candidates = participants.filter(p => !currentWinnerSet.has(p.userId));
+
+    if (candidates.length === 0) {
+      await interaction.editReply({ content: `❌ No eligible participants left to reroll.` });
+      return;
+    }
+
+    const weightedRoles = (giveaway as WeightedRolesGiveaway).weightedRoles || [];
+    const winner = selectWinner(weightedRoles, candidates);
+
+    if (!winner) {
+      await interaction.editReply({ content: `❌ Failed to select a new winner.` });
+      return;
+    }
+
+    const newWinnerId = winner.userId;
+
+    // Update DB
+    await giveawayRepository.updateWinner(messageId, position, newWinnerId);
+
+    // Announce
+    const channel = await interaction.client.channels.fetch(giveaway.channelId) as TextChannel;
+    if (channel) {
+      const winnerMember = await channel.guild.members.fetch(newWinnerId);
+      const winnerRequest = (winner as ParticipantWithRequest).requests?.find((r) => r.winAtPosition === position)?.content || '';
+
+      await channel.send({
+        content: `🎉 **Giveaway Reroll!**\n\nThe new winner for position #${position} is <@${newWinnerId}>! (User <@${oldWinnerId}> was rerolled)`,
+        reply: {
+          messageReference: giveaway.messageId,
+        },
+        embeds: [
+          createWinnerEmbed({
+            number: position,
+            winnerId: newWinnerId,
+            winnerUsername: winnerMember.user.username,
+            winnerRoleId: winner.roleId,
+            winnerGuildAvatarUrl: winnerMember.user.avatarURL(),
+            color: winnerMember.displayHexColor,
+            winnerRequest: winnerRequest,
+          })
+        ]
+      });
+    }
+
+    await interaction.editReply({ content: `✅ Rerolled winner at position ${position}. New winner: <@${newWinnerId}>` });
   }
 }

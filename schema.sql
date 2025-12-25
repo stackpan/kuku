@@ -35,3 +35,10 @@ CREATE TABLE IF NOT EXISTS participant_requests (
     content VARCHAR(30) NOT NULL,
     PRIMARY KEY (participant_id, win_at_position)
 );
+
+CREATE TABLE IF NOT EXISTS giveaways_winners (
+    giveaway_message_id VARCHAR(20) REFERENCES giveaways(message_id) ON DELETE CASCADE,
+    position INTEGER NOT NULL,
+    user_id VARCHAR(20) NOT NULL,
+    UNIQUE (giveaway_message_id, position)
+);

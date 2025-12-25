@@ -149,4 +149,34 @@ export default class GiveawayRepository {
     const query = `DELETE FROM giveaways WHERE message_id = $1`;
     await this.database.pool.query(query, [messageId]);
   }
+
+  async addWinners(messageId: string, userIds: string[]): Promise<void> {
+    if (userIds.length === 0) return;
+
+    const values = userIds.map((_, i) => `($1, ${i + 1}, $${i + 2})`).join(', ');
+    const query = `
+      INSERT INTO giveaways_winners (giveaway_message_id, position, user_id)
+      VALUES ${values}
+      ON CONFLICT (giveaway_message_id, position) DO UPDATE SET user_id = EXCLUDED.user_id
+    `;
+
+    await this.database.pool.query(query, [messageId, ...userIds]);
+  }
+
+  async getWinners(messageId: string): Promise<string[]> {
+    const query = `
+      SELECT user_id FROM giveaways_winners WHERE giveaway_message_id = $1 ORDER BY position ASC
+    `;
+    const result = await this.database.pool.query(query, [messageId]);
+    return result.rows.map(row => row.user_id);
+  }
+
+  async updateWinner(messageId: string, position: number, userId: string): Promise<void> {
+    const query = `
+      INSERT INTO giveaways_winners (giveaway_message_id, position, user_id)
+      VALUES ($1, $2, $3)
+      ON CONFLICT (giveaway_message_id, position) DO UPDATE SET user_id = EXCLUDED.user_id
+    `;
+    await this.database.pool.query(query, [messageId, position, userId]);
+  }
 }

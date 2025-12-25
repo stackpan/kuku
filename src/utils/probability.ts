@@ -26,14 +26,14 @@ export function selectWinner(weightedRoles: GuildGiveawayWeightedRole[], partici
   }, {} as Record<string, number>);
 
   const totalWeight = participants.reduce((sum, p) => {
-    return sum + (weights[p.roleId] || 0);
+    return sum + (weights[p.roleId] ?? 1);
   }, 0);
 
   let random = Math.random() * totalWeight;
   let cumulativeWeight = 0;
 
   for (const participant of participants) {
-    const weight = weights[participant.roleId] || 0;
+    const weight = weights[participant.roleId] ?? 1;
     cumulativeWeight += weight;
     if (random <= cumulativeWeight) {
       return participant;

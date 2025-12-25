@@ -111,6 +111,8 @@ export class GiveawayScheduler {
 
         const winners = await Promise.all(Array.from(winnerIds).map(winnerId => channel.guild.members.fetch(winnerId)));
 
+        await giveawayRepository.addWinners(giveaway.messageId, Array.from(winnerIds));
+
         await channel.send({
           content: `# 🎊 Giveaway Ended!\n**Giveaway:** ${giveaway.name}\n\nCongratulations! Here are the winners: 🎉\n${Array.from(winnerIds).map((winnerId, index) => `${index + 1}. <@${winnerId}>`).join('\n')}`,
           reply: {
